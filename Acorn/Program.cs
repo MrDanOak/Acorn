@@ -21,7 +21,7 @@ Console.WriteLine($"""
 {GREEN}          _       {BOLD}Acorn Endless-Online Server Software{NOBOLD}
         _/-\_     ------------------------------------
      .-`-:-:-`-.  {GREEN}Author:{NORMAL} Dan Oak{GREEN}
-    /-:-:-:-:-:-\ 
+    /-:-:-:-:-:-\ {GREEN}Version:{NORMAL} 0.0.0.1{GREEN}
     \:-:-:-:-:-:/ 
      |`       `|  
      |         |  
@@ -92,6 +92,8 @@ static class IocRegistrations
             .AddTransient<IPacketHandler<ConnectionAcceptClientPacket>, ConnectionAcceptClientPacketHandler>()
             .AddTransient<IPacketHandler<ConnectionPingClientPacket>, ConnectionPingClientPacketHandler>()
             .AddTransient<IPacketHandler<LoginRequestClientPacket>, LoginRequestClientPacketHandler>()
+            .AddTransient<IPacketHandler<CharacterRequestClientPacket>, CharacterRequestClientPacketHandler>()
+            .AddTransient<IPacketHandler<CharacterCreateClientPacket>, CharacterCreateClientPacketHandler>()
         ;
 
     public static IServiceCollection AddRepositories(this IServiceCollection services)

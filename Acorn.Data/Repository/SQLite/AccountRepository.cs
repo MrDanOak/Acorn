@@ -90,11 +90,14 @@ public class AccountRepository: IRepository<Account>, IDisposable
     {
         try
         {
-            return await _conn.QuerySingleOrDefaultAsync<Account>("SELECT * FROM Accounts WHERE Username = @username", new { username }) switch
+            var acc = await _conn.QuerySingleOrDefaultAsync<Account>("SELECT * FROM Accounts WHERE Username = @username", new { username });
+            if (acc is null)
             {
-                Account account when account is not null => new Success<Account>(account),
-                _ => new NotFound()
-            };
+                return new NotFound();
+            }
+
+            acc.Characters = (await _conn.QueryAsync<Character>("SELECT * FROM Characters WHERE Accounts_Username = @username", new { username })).ToList();
+            return new Success<Account>(acc);
         }
         catch (Exception e)
         {

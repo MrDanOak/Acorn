@@ -1,4 +1,5 @@
-﻿using Acorn.Extensions;
+﻿using Acorn.Data.Models;
+using Acorn.Extensions;
 using Acorn.Net.Models;
 using Acorn.Net.PacketHandlers;
 using Microsoft.Extensions.Logging;
@@ -27,6 +28,7 @@ public class PlayerConnection : IDisposable
     public PacketSequencer PacketSequencer { get; set; } = new(ZeroSequence.Instance);
     public InitSequenceStart StartSequence { get; set; }
     public TcpClient TcpClient { get; }
+    public Account CurrentPlayer { get; internal set; }
 
     public PlayerConnection(
         IServiceProvider services,
@@ -63,30 +65,30 @@ public class PlayerConnection : IDisposable
                 var bytes = new byte[decodedLength];
                 await stream.ReadAsync(bytes.AsMemory(0, decodedLength));
 
-var decodedBytes = ClientEncryptionMulti switch
-{
-    0 => bytes,
-    _ => DataEncrypter.SwapMultiples(DataEncrypter.Deinterleave(DataEncrypter.FlipMSB(bytes)), ClientEncryptionMulti)
-};
+                var decodedBytes = ClientEncryptionMulti switch
+                {
+                    0 => bytes,
+                    _ => DataEncrypter.SwapMultiples(DataEncrypter.Deinterleave(DataEncrypter.FlipMSB(bytes)), ClientEncryptionMulti)
+                };
 
-var reader = new EoReader(decodedBytes);
-var action = (PacketAction)reader.GetByte();
-var family = (PacketFamily)reader.GetByte();
+                var reader = new EoReader(decodedBytes);
+                var action = (PacketAction)reader.GetByte();
+                var family = (PacketFamily)reader.GetByte();
 
-HandleSequence(family, action, ref reader);
+                HandleSequence(family, action, ref reader);
 
-var dataReader = reader.Slice();
+                var dataReader = reader.Slice();
 
-var packet = _resolver.Create(family, action);
-packet.Deserialize(dataReader);
-_logger.LogDebug("Request: {Packet}", packet.ToString());
+                var packet = _resolver.Create(family, action);
+                packet.Deserialize(dataReader);
+                _logger.LogDebug("Request: {Packet}", packet.ToString());
 
-var handlerType = typeof(IPacketHandler<>).MakeGenericType(packet.GetType());
-if (_serviceProvider.GetService(handlerType) is not IHandler handler)
-{
-    _logger.LogError("Handler not registered for packet of type {PacketType} Exiting...", packet.GetType());
-    break;
-}
+                var handlerType = typeof(IPacketHandler<>).MakeGenericType(packet.GetType());
+                if (_serviceProvider.GetService(handlerType) is not IHandler handler)
+                {
+                    _logger.LogError("Handler not registered for packet of type {PacketType} Exiting...", packet.GetType());
+                    break;
+                }
 
                 var error = false;
 
