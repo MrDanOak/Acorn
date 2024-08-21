@@ -51,6 +51,7 @@ await Host.CreateDefaultBuilder(args)
                 _ => new SqlConnection(configuration.GetConnectionString("MSSQL"))
             })
             .AddSingleton<IStatsReporter, StatsReporter>()
+            .AddSingleton<ISessionGenerator, SessionGenerator>()
             .AddHostedService<NewConnectionListener>()
             .AddPacketHandlers()
             .AddRepositories();

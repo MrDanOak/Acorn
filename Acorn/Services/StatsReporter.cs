@@ -27,10 +27,11 @@ public class StatsReporter : IStatsReporter
             _logger.LogInformation("Loaded {Accounts} account(s)", accounts.Value.ToList().Count);
         }, err => { });
 
-        _logger.LogInformation("Loaded {Items} items", _dataRepository.GetItems().Count());
-        _logger.LogInformation("Loaded {Npcs} npcs", _dataRepository.GetNpcs().Count());
-        _logger.LogInformation("Loaded {Classes} classes", _dataRepository.GetClasses().Count());
-        _logger.LogInformation("Loaded {Maps} maps", _dataRepository.GetMaps().Count());
+        _logger.LogInformation("Loaded {Items} items", _dataRepository.Eif.Items.Count());
+        _logger.LogInformation("Loaded {Npcs} npcs", _dataRepository.Enf.Npcs.Count());
+        _logger.LogInformation("Loaded {Classes} classes", _dataRepository.Ecf.Classes.Count());
+        _logger.LogInformation("Loaded {Skills} skills", _dataRepository.Esf.Skills.Count());
+        _logger.LogInformation("Loaded {Maps} maps", _dataRepository.Maps.Count());
     }
 }
 

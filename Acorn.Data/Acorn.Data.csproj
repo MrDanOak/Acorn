@@ -10,7 +10,7 @@
 		<PackageReference Include="Dapper" Version="2.1.35" />
 		<PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0-preview.7.24405.7" />
 		<PackageReference Include="OneOf" Version="3.0.271" />
-		<PackageReference Include="Moffat.EndlessOnline.SDK" Version="1.0.0-rc2" />
+		<PackageReference Include="Moffat.EndlessOnline.SDK" Version="1.0.0-rc3" />
 	</ItemGroup>
 
 </Project>

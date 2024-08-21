@@ -5,6 +5,7 @@ using Acorn.Net.PacketHandlers;
 using Microsoft.Extensions.Logging;
 using Moffat.EndlessOnline.SDK.Data;
 using Moffat.EndlessOnline.SDK.Packet;
+using Moffat.EndlessOnline.SDK.Protocol;
 using Moffat.EndlessOnline.SDK.Protocol.Net;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
 using System.Net.Sockets;
@@ -30,6 +31,7 @@ public class PlayerConnection : IDisposable
     public TcpClient TcpClient { get; }
     public Account? CurrentPlayer { get; set; }
     public int SessionId { get; internal set; }
+    public Character Character { get; internal set; }
 
     public PlayerConnection(
         IServiceProvider services,
