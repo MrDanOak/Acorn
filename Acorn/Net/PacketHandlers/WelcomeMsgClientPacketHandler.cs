@@ -1,4 +1,5 @@
-﻿using Moffat.EndlessOnline.SDK.Protocol.Net;
+﻿using Acorn.Net.Models;
+using Moffat.EndlessOnline.SDK.Protocol.Net;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Client;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
 using OneOf;
@@ -9,6 +10,8 @@ internal class WelcomeMsgClientPacketHandler : IPacketHandler<WelcomeMsgClientPa
 {
     public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, WelcomeMsgClientPacket packet)
     {
+        playerConnection.ClientState = ClientState.InGame;
+
         await playerConnection.Send(new WelcomeReplyServerPacket()
         {
             WelcomeCode = WelcomeCode.EnterGame,
