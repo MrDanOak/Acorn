@@ -2,13 +2,14 @@
 using Acorn.Data.Repository;
 using Acorn.Net;
 using Acorn.Net.PacketHandlers;
+using Acorn.Services;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Moffat.EndlessOnline.SDK.Protocol.Net.Client;
+using Moffat.EndlessOnline.SDK.Protocol.Pub;
 using System.Data;
 using System.Reflection;
 
@@ -44,10 +45,12 @@ await Host.CreateDefaultBuilder(args)
             .AddAutoMapper(Assembly.GetExecutingAssembly())
             .AddSingleton<IConfiguration>(configuration)
             .AddSingleton<UtcNowDelegate>(() => DateTime.UtcNow)
-            .AddTransient<IDbConnection>(sp => configuration["Database:Engine"] switch {
+            .AddTransient<IDbConnection>(sp => configuration["Database:Engine"] switch
+            {
                 "SQLite" => new SqliteConnection(configuration.GetConnectionString("SQLite")),
                 _ => new SqlConnection(configuration.GetConnectionString("MSSQL"))
             })
+            .AddSingleton<IStatsReporter, StatsReporter>()
             .AddHostedService<NewConnectionListener>()
             .AddPacketHandlers()
             .AddRepositories();
@@ -86,15 +89,23 @@ void CheckSqliteIfUsing(IConfiguration configuration)
 static class IocRegistrations
 {
     public static IServiceCollection AddPacketHandlers(this IServiceCollection services)
-        => services.AddTransient<IPacketHandler<AccountCreateClientPacket>, AccountCreateClientPacketHandler>()
-            .AddTransient<IPacketHandler<AccountRequestClientPacket>, AccountRequestClientPacketHandler>()
-            .AddTransient<IPacketHandler<InitInitClientPacket>, InitInitClientPacketHandler>()
-            .AddTransient<IPacketHandler<ConnectionAcceptClientPacket>, ConnectionAcceptClientPacketHandler>()
-            .AddTransient<IPacketHandler<ConnectionPingClientPacket>, ConnectionPingClientPacketHandler>()
-            .AddTransient<IPacketHandler<LoginRequestClientPacket>, LoginRequestClientPacketHandler>()
-            .AddTransient<IPacketHandler<CharacterRequestClientPacket>, CharacterRequestClientPacketHandler>()
-            .AddTransient<IPacketHandler<CharacterCreateClientPacket>, CharacterCreateClientPacketHandler>()
-        ;
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        var packetHandlerType = typeof(IPacketHandler<>);
+
+        var handlers = assembly.GetTypes()
+            .Where(t => t.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == packetHandlerType))
+            .ToList();
+
+        foreach (var handler in handlers)
+        {
+            var interfaceType = handler.GetInterfaces()
+                .First(i => i.IsGenericType && i.GetGenericTypeDefinition() == packetHandlerType);
+            services.AddTransient(interfaceType, handler);
+        }
+
+        return services;
+    }
 
     public static IServiceCollection AddRepositories(this IServiceCollection services)
     => services
@@ -102,7 +113,7 @@ static class IocRegistrations
             .AddTransient<Acorn.Data.Repository.SQLite.AccountRepository>()
             .AddTransient<Acorn.Data.Repository.MSSQL.CharacterRepository>()
             .AddTransient<Acorn.Data.Repository.SQLite.CharacterRepository>()
-            .AddTransient<IRepository<Account>>(provider => 
+            .AddTransient<IRepository<Account>>(provider =>
                 provider.GetRequiredService<IConfiguration>()["Database:Engine"]?.ToLower() switch
                 {
                     "sqlite" => provider.GetRequiredService<Acorn.Data.Repository.SQLite.AccountRepository>(),
@@ -114,6 +125,7 @@ static class IocRegistrations
                     "sqlite" => provider.GetRequiredService<Acorn.Data.Repository.SQLite.CharacterRepository>(),
                     _ => provider.GetRequiredService<Acorn.Data.Repository.MSSQL.CharacterRepository>()
                 })
+            .AddSingleton<IDataRepository, DataRepository>()
         ;
 }
 

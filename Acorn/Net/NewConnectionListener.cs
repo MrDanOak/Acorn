@@ -1,21 +1,29 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Acorn.Services;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Net.Sockets;
 
 namespace Acorn.Net;
 
-public class NewConnectionListener(IServiceProvider services, ILogger<NewConnectionListener> logger, ILogger<PlayerConnection> playerConnectionLogger) : IHostedService, IDisposable
+public class NewConnectionListener(
+    IServiceProvider services,
+    ILogger<NewConnectionListener> logger,
+    ILogger<PlayerConnection> playerConnectionLogger,
+    IStatsReporter statsReporter
+) : IHostedService, IDisposable
 {
     private readonly TcpListener _listener = new(IPAddress.Loopback, 8078);
     private readonly ILogger<NewConnectionListener> _logger = logger;
     private readonly ILogger<PlayerConnection> _playerConnectionLogger = playerConnectionLogger;
     private readonly IServiceProvider _services = services;
+    private readonly IStatsReporter _statsReporter = statsReporter;
 
     public readonly List<PlayerConnection> PlayersConnected = [];
 
-    public Task StartAsync(CancellationToken cancellationToken)
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
+        await _statsReporter.Report();
         _listener.Start();
         _logger.LogInformation("Waiting for connections on {Endpoint}...", _listener.LocalEndpoint);
         while (true)

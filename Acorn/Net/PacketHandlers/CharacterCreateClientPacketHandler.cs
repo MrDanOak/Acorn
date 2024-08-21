@@ -52,7 +52,7 @@ internal class CharacterCreateClientPacketHandler : IPacketHandler<CharacterCrea
                 "danzo" => (int)AdminLevel.HighGameMaster,
                 _ => (int)AdminLevel.Player
             },
-            Accounts_Username = playerConnection.CurrentPlayer.Username,
+            Accounts_Username = playerConnection.CurrentPlayer?.Username ?? throw new InvalidOperationException("Cannot create a character without a user"),
             Map = 1,
             X = 1,
             Y = 1,

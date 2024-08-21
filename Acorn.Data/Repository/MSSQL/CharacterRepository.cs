@@ -15,6 +15,11 @@ public class CharacterRepository : IRepository<Character>
         throw new NotImplementedException();
     }
 
+    public Task<OneOf<Success<IEnumerable<Character>>, Error>> GetAll()
+    {
+        throw new NotImplementedException();
+    }
+
     public Task<OneOf<Success<Character>, NotFound, Error>> GetByKey(string key)
     {
         throw new NotImplementedException();

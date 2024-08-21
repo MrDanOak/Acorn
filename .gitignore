@@ -482,3 +482,17 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Endless Online Copyright data
+*.emf
+*.ecf
+*.ebf
+*.eif
+*.eid
+*.esf
+*.edf
+*.enf
+*.evf
+*.etf
+
+Acorn/Data/Quests/*.txt

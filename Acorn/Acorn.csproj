@@ -38,4 +38,10 @@
 	  <Folder Include="Database\SQLite\" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<Content Include="Data\**\*.*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
 </Project>

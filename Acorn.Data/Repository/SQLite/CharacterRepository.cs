@@ -177,4 +177,9 @@ public class CharacterRepository : IRepository<Character>, IDisposable
             _conn.Close();
         _conn.Dispose();
     }
+
+    public Task<OneOf<Success<IEnumerable<Character>>, Error>> GetAll()
+    {
+        throw new NotImplementedException();
+    }
 }

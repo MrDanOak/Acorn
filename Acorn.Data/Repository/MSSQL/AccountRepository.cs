@@ -95,6 +95,11 @@ public class AccountRepository : IRepository<Account>, IDisposable
         _conn.Dispose();
     }
 
+    public Task<OneOf<Success<IEnumerable<Account>>, Error>> GetAll()
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<OneOf<Success<Account>, NotFound, Error>> GetByKey(string username)
     {
         if (_conn.State != ConnectionState.Open)

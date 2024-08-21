@@ -107,6 +107,28 @@ public class AccountRepository: IRepository<Account>, IDisposable
         return new Error();
     }
 
+    public async Task<OneOf<Success<IEnumerable<Account>>, Error>> GetAll()
+    {
+        try
+        {
+            var accounts = (await _conn.QueryAsync<Account>("SELECT * FROM Accounts")).ToList();
+            var withCharacters = accounts.Select(async a =>
+            {
+                a.Characters = (await _conn.QueryAsync<Character>("SELECT * FROM Characters WHERE Accounts_Username = @username", new { username = a.Username })).ToList();
+                return a;
+            });
+
+            var results = await Task.WhenAll(withCharacters);
+            return new Success<IEnumerable<Account>>(results);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("Error fetching all accounts. Exception {Exception}", e.Message);
+        }
+
+        return new Error();
+    }
+
     public async Task<OneOf<Success, Error>> UpdateAsync(Account entity)
     {
         using var t = _conn.BeginTransaction(IsolationLevel.ReadCommitted);

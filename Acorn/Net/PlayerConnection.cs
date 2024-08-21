@@ -28,7 +28,8 @@ public class PlayerConnection : IDisposable
     public PacketSequencer PacketSequencer { get; set; } = new(ZeroSequence.Instance);
     public InitSequenceStart StartSequence { get; set; }
     public TcpClient TcpClient { get; }
-    public Account CurrentPlayer { get; internal set; }
+    public Account? CurrentPlayer { get; set; }
+    public int SessionId { get; internal set; }
 
     public PlayerConnection(
         IServiceProvider services,

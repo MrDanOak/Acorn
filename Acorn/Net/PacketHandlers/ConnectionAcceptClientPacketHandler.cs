@@ -22,5 +22,6 @@ public class ConnectionAcceptClientPacketHandler(
         return new Success();
     }
 
-    public Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, object packet) => HandleAsync(playerConnection, (ConnectionAcceptClientPacket)packet);
+    public Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, object packet) 
+        => HandleAsync(playerConnection, (ConnectionAcceptClientPacket)packet);
 }
