@@ -6,10 +6,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Acorn.MappingProfiles;
-public class EquipmentMapper : Profile
+namespace Acorn.Infrastructure.MappingProfiles;
+public class EquipmentMappingProfile : Profile
 {
-    public EquipmentMapper()
+    public EquipmentMappingProfile()
     {
         CreateMap<EquipmentPaperdoll, EquipmentWelcome>();
     }

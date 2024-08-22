@@ -1,22 +1,22 @@
 ﻿using AutoMapper;
-using Acorn.Data.Models;
+using Acorn.Data;
 using Acorn.Data.Repository;
-using Acorn.Security;
 using Microsoft.Extensions.Logging;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Client;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
 using OneOf;
 using OneOf.Types;
 using System.Text;
+using Acorn.Services.Security;
 
 namespace Acorn.Net.PacketHandlers;
 internal class AccountCreateClientPacketHandler(
-    IRepository<Account> accountRepository,
+    IDbRepository<Account> accountRepository,
     IMapper mapper,
     ILogger<AccountCreateClientPacketHandler> logger
 ) : IPacketHandler<AccountCreateClientPacket>
 {
-    private readonly IRepository<Account> _accountRepository = accountRepository;
+    private readonly IDbRepository<Account> _accountRepository = accountRepository;
     private readonly IMapper _mapper = mapper;
     private readonly ILogger<AccountCreateClientPacketHandler> _logger = logger;
 

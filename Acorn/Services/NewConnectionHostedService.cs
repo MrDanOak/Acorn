@@ -1,25 +1,31 @@
-﻿using Acorn.Services;
+﻿using Acorn.Data;
+using Acorn.Data.Repository;
+using Acorn.Infrastructure;
+using Acorn.Net;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 
-namespace Acorn.Net;
+namespace Acorn.Services;
 
-public class NewConnectionListener(
+public class NewConnectionHostedService(
     IServiceProvider services,
-    ILogger<NewConnectionListener> logger,
+    ILogger<NewConnectionHostedService> logger,
     ILogger<PlayerConnection> playerConnectionLogger,
-    IStatsReporter statsReporter
+    IStatsReporter statsReporter,
+    WorldState worldState,
+    IDbRepository<Character> characterRepository
 ) : IHostedService, IDisposable
 {
     private readonly TcpListener _listener = new(IPAddress.Loopback, 8078);
-    private readonly ILogger<NewConnectionListener> _logger = logger;
+    private readonly ILogger<NewConnectionHostedService> _logger = logger;
     private readonly ILogger<PlayerConnection> _playerConnectionLogger = playerConnectionLogger;
     private readonly IServiceProvider _services = services;
     private readonly IStatsReporter _statsReporter = statsReporter;
-
-    public readonly List<PlayerConnection> PlayersConnected = [];
+    private readonly WorldState _world = worldState;
+    private readonly IDbRepository<Character> _characterRepository = characterRepository;
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
@@ -35,21 +41,28 @@ public class NewConnectionListener(
                 continue;
             }
 
-            PlayersConnected.Add(new PlayerConnection(_services, client, _playerConnectionLogger, handler =>
+            _world.PlayerConnections.Add(new PlayerConnection(_services, client, _playerConnectionLogger, async handler =>
             {
-                PlayersConnected.Remove(handler);
+                _world.PlayerConnections = new ConcurrentBag<PlayerConnection>(
+                    _world.PlayerConnections.Where(x => x != handler)
+                );
+
+                if (handler.Character is not null)
+                {
+                    await _characterRepository.UpdateAsync(handler.Character);
+                }
                 _logger.LogInformation("Player disconnected");
                 UpdateConnectedCount();
             }));
 
-            _logger.LogInformation("Connection accepted. {PlayersConnected} players connected", PlayersConnected.Count);
+            _logger.LogInformation("Connection accepted. {PlayersConnected} players connected", _world.PlayerConnections.Count);
             UpdateConnectedCount();
         }
     }
 
     private void UpdateConnectedCount()
     {
-        Console.Title = $"Acorn Server ({PlayersConnected.Count} Connected)";
+        Console.Title = $"Acorn Server ({_world.PlayerConnections.Count} Connected)";
     }
 
     public Task StopAsync(CancellationToken cancellationToken)

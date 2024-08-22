@@ -6,12 +6,12 @@ using OneOf.Types;
 using System.Text.RegularExpressions;
 
 namespace Acorn.Data.Repository;
-public class DataRepository : IDataRepository
+public class DataFileRepository : IDataFileRepository
 { 
     private readonly string _ecfFile = "Data/Pub/dat001.ecf";
     private readonly string _eifFile = "Data/Pub/dat001.eif";
     private readonly string _enfFile = "Data/Pub/dtn001.enf";
-    private readonly string _esfFile = "Data/Pub/dts001.esf";
+    private readonly string _esfFile = "Data/Pub/dsl001.esf";
 
     public Ecf Ecf { get; } = new();
     public Eif Eif { get; } = new();
@@ -19,7 +19,7 @@ public class DataRepository : IDataRepository
     public Esf Esf { get; } = new();
     public IEnumerable<MapWithId> Maps { get; }
 
-    public DataRepository()
+    public DataFileRepository()
     {
         Ecf.Deserialize(new EoReader(File.ReadAllBytes(_ecfFile)));
         Eif.Deserialize(new EoReader(File.ReadAllBytes(_eifFile)));
@@ -89,7 +89,7 @@ public static class EsfExtension
 
 public record MapWithId(int Id, Emf Map);
 
-public interface IDataRepository
+public interface IDataFileRepository
 {
     Ecf Ecf { get; }
     Eif Eif { get; }

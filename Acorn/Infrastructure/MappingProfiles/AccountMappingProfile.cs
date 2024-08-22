@@ -1,8 +1,8 @@
-﻿using Acorn.Data.Models;
+﻿using Acorn.Data;
 using AutoMapper;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Client;
 
-namespace Acorn.MappingProfiles;
+namespace Acorn.Infrastructure.MappingProfiles;
 internal class AccountMappingProfile : Profile
 {
     private UtcNowDelegate _nowProvider;

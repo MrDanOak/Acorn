@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 
-namespace Acorn.Security;
+namespace Acorn.Services.Security;
 internal static class Hash
 {
     public static string HashPassword(string username, string password, out byte[] salt)

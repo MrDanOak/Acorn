@@ -1,4 +1,4 @@
-﻿using Acorn.Data.Models;
+﻿using Acorn.Data;
 using Acorn.Data.Repository;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualBasic;
@@ -11,11 +11,11 @@ using OneOf.Types;
 
 namespace Acorn.Net.PacketHandlers;
 internal class AccountRequestClientPacketHandler(
-    IRepository<Account> accountRepository, 
+    IDbRepository<Account> accountRepository, 
     ILogger<AccountRequestClientPacket> logger
 ) : IPacketHandler<AccountRequestClientPacket>
 {
-    private readonly IRepository<Account> _accountRepository = accountRepository;
+    private readonly IDbRepository<Account> _accountRepository = accountRepository;
     private readonly ILogger<AccountRequestClientPacket> _logger = logger;
 
     public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, AccountRequestClientPacket packet)

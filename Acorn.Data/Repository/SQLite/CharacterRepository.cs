@@ -1,19 +1,12 @@
-﻿using Acorn.Data.Models;
-using Dapper;
+﻿using Dapper;
 using Microsoft.Extensions.Logging;
 using OneOf;
 using OneOf.Types;
-using System;
 using System.Data;
-using System.Diagnostics;
-using System.Reflection.Emit;
-using System.Reflection;
-using System.Security.Claims;
-using System.Xml.Linq;
 
 namespace Acorn.Data.Repository.SQLite;
 
-public class CharacterRepository : IRepository<Character>, IDisposable
+public class CharacterRepository : IDbRepository<Character>, IDisposable
 {
     private readonly IDbConnection _conn;
     private readonly ILogger<AccountRepository> _logger;
@@ -68,20 +61,12 @@ public class CharacterRepository : IRepository<Character>, IDisposable
                 StatPoints,
                 SkillPoints,
                 Karma,
-                Sitting,
+                SitState,
                 Hidden,
                 NoInteract,
                 BankMax,
                 GoldBank,
-                Usage,
-                Inventory,
-                Bank,
-                Paperdoll,
-                Spells,
-                Guild,
-                GuildRank,
-                GuildRankString,
-                Quest
+                Usage
             )
             VALUES
             (
@@ -113,20 +98,12 @@ public class CharacterRepository : IRepository<Character>, IDisposable
                 @StatPoints,
                 @SkillPoints,
                 @Karma,
-                @Sitting,
+                @SitState,
                 @Hidden,
                 @NoInteract,
                 @BankMax,
                 @GoldBank,
-                @Usage,
-                @Inventory,
-                @Bank,
-                @Paperdoll,
-                @Spells,
-                @Guild,
-                @GuildRank,
-                @GuildRankString,
-                @Quest
+                @Usage
             )
             """, entity);
 
@@ -166,9 +143,61 @@ public class CharacterRepository : IRepository<Character>, IDisposable
         return new Error();
     }
 
-    public Task<OneOf<Success, Error>> UpdateAsync(Character entity)
+    public async Task<OneOf<Success, Error>> UpdateAsync(Character entity)
     {
-        throw new NotImplementedException();
+        using var t = _conn.BeginTransaction(IsolationLevel.ReadCommitted);
+        try
+        {
+            await _conn.ExecuteAsync("""
+            UPDATE Characters
+            SET
+                Title = @Title,
+                Home = @Home,
+                Fiance = @Fiance,
+                Partner = @Partner,
+                Admin = @Admin,
+                Class = @Class,
+                Gender = @Gender,
+                Race = @Race,
+                HairStyle = @HairStyle,
+                HairColor = @HairColor,
+                Map = @Map,
+                X = @X,
+                Y = @Y,
+                Direction = @Direction,
+                Level = @Level,
+                Exp = @Exp,
+                Hp = @Hp,
+                Tp = @Tp,
+                Str = @Str,
+                Wis = @Wis,
+                Agi = @Agi,
+                Con = @Con,
+                Cha = @Cha,
+                StatPoints = @StatPoints,
+                SkillPoints = @SkillPoints,
+                Karma = @Karma,
+                SitState = @SitState,
+                Hidden = @Hidden,
+                NoInteract = @NoInteract,
+                BankMax = @BankMax,
+                GoldBank = @GoldBank,
+                Usage = @Usage
+            WHERE Name = @Name
+            """, entity);
+
+            _logger.LogInformation("Saved character '{Name}'", entity.Name);
+
+            t.Commit();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("Error saving character information for {CharacterName}. Exception {Exception}", entity.Name, e.Message);
+            t.Rollback();
+            return new Error();
+        }
+
+        return new Success();
     }
 
     public void Dispose()

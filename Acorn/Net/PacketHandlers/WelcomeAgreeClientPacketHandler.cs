@@ -8,10 +8,10 @@ using OneOf.Types;
 namespace Acorn.Net.PacketHandlers;
 public class WelcomeAgreeClientPacketHandler : IPacketHandler<WelcomeAgreeClientPacket>
 {
-    private readonly IDataRepository _dataRepository;
+    private readonly IDataFileRepository _dataRepository;
 
     public WelcomeAgreeClientPacketHandler(
-        IDataRepository dataRepository
+        IDataFileRepository dataRepository
     )
     {
         _dataRepository = dataRepository;
@@ -20,7 +20,6 @@ public class WelcomeAgreeClientPacketHandler : IPacketHandler<WelcomeAgreeClient
     public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, WelcomeAgreeClientPacket packet)
     {
         var eoWriter = new EoWriter();
-
         Action serialise = packet.FileType switch
         {
             FileType.Eif => () => _dataRepository.Eif.Serialize(eoWriter),
@@ -91,6 +90,7 @@ public class WelcomeAgreeClientPacketHandler : IPacketHandler<WelcomeAgreeClient
                         Content = bytes
                     }
                 },
+                _ => throw new NotImplementedException($"{packet.FileType} is not supported"),
             }
         });
 

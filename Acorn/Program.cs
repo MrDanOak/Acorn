@@ -1,6 +1,7 @@
-﻿using Acorn.Data.Models;
+﻿using Acorn;
+using Acorn.Data;
 using Acorn.Data.Repository;
-using Acorn.Net;
+using Acorn.Infrastructure;
 using Acorn.Net.PacketHandlers;
 using Acorn.Services;
 using Microsoft.Data.SqlClient;
@@ -52,7 +53,9 @@ await Host.CreateDefaultBuilder(args)
             })
             .AddSingleton<IStatsReporter, StatsReporter>()
             .AddSingleton<ISessionGenerator, SessionGenerator>()
-            .AddHostedService<NewConnectionListener>()
+            .AddHostedService<NewConnectionHostedService>()
+            .AddHostedService<WorldHostedService>()
+            .AddSingleton<WorldState>()
             .AddPacketHandlers()
             .AddRepositories();
     })
@@ -114,19 +117,19 @@ static class IocRegistrations
             .AddTransient<Acorn.Data.Repository.SQLite.AccountRepository>()
             .AddTransient<Acorn.Data.Repository.MSSQL.CharacterRepository>()
             .AddTransient<Acorn.Data.Repository.SQLite.CharacterRepository>()
-            .AddTransient<IRepository<Account>>(provider =>
+            .AddTransient<IDbRepository<Account>>(provider =>
                 provider.GetRequiredService<IConfiguration>()["Database:Engine"]?.ToLower() switch
                 {
                     "sqlite" => provider.GetRequiredService<Acorn.Data.Repository.SQLite.AccountRepository>(),
                     _ => provider.GetRequiredService<Acorn.Data.Repository.MSSQL.AccountRepository>()
                 })
-            .AddTransient<IRepository<Character>>(provider =>
+            .AddTransient<IDbRepository<Character>>(provider =>
                 provider.GetRequiredService<IConfiguration>()["Database:Engine"]?.ToLower() switch
                 {
                     "sqlite" => provider.GetRequiredService<Acorn.Data.Repository.SQLite.CharacterRepository>(),
                     _ => provider.GetRequiredService<Acorn.Data.Repository.MSSQL.CharacterRepository>()
                 })
-            .AddSingleton<IDataRepository, DataRepository>()
+            .AddSingleton<IDataFileRepository, DataFileRepository>()
         ;
 }
 

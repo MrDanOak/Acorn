@@ -1,5 +1,5 @@
 ﻿using Acorn.Data.Repository;
-using Acorn.Services;
+using Acorn.Infrastructure;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Moffat.EndlessOnline.SDK.Protocol;
@@ -12,13 +12,13 @@ namespace Acorn.Net.PacketHandlers;
 internal class WelcomeRequestClientPacketHandler : IPacketHandler<WelcomeRequestClientPacket>
 {
     private readonly ISessionGenerator _sessionGenerator;
-    private readonly IDataRepository _dataRepository;
+    private readonly IDataFileRepository _dataRepository;
     private readonly ILogger<WelcomeRequestClientPacketHandler> _logger;
     private readonly IMapper _mapper;
 
     public WelcomeRequestClientPacketHandler(
         ISessionGenerator sessionGenerator,
-        IDataRepository dataRepository,
+        IDataFileRepository dataRepository,
         ILogger<WelcomeRequestClientPacketHandler> logger,
         IMapper mapper
     )
@@ -54,6 +54,7 @@ internal class WelcomeRequestClientPacketHandler : IPacketHandler<WelcomeRequest
         }
 
         playerConnection.Character = character;
+        character.CalculateStats(_dataRepository.Ecf);
 
         await playerConnection.Send(new WelcomeReplyServerPacket
         {
@@ -73,14 +74,43 @@ internal class WelcomeRequestClientPacketHandler : IPacketHandler<WelcomeRequest
                 EsfLength = _dataRepository.Esf.ByteSize,
                 EsfRid = _dataRepository.Esf.Rid,
                 Experience = character.Exp,
-                GuildName = character.Guild ?? "",
-                GuildRank = character.GuildRank,
-                GuildRankName = character.GuildRankString ?? "",
-                GuildTag = character.Guild ?? "   ",
+                GuildName = "DansArmy",
+                GuildRank = 0,
+                GuildRankName = "The Boss",
+                GuildTag = "DAN",
                 MapFileSize = map.ByteSize,
                 MapId = character.Map,
                 MapRid = map.Rid,
                 Name = character.Name,
+                Stats = new CharacterStatsWelcome
+                {
+                    Base = new CharacterBaseStatsWelcome
+                    {
+                        Agi = character.Agi,
+                        Cha = character.Cha,
+                        Con = character.Con,
+                        Str = character.Str,
+                        Wis = character.Wis
+                    },
+                    Secondary = new CharacterSecondaryStats
+                    {
+                        Accuracy = 10,
+                        Armor = 10,
+                        Evade = 10,
+                        MaxDamage = 150,
+                        MinDamage = 100
+                    },
+                    Karma = character.Karma,
+                    MaxSp = character.MaxSp,
+                    MaxTp = character.MaxTp,
+                    Tp = character.Tp,
+                    MaxHp = character.MaxHp,
+                    Hp = character.Hp,
+                    SkillPoints = character.SkillPoints,
+                    StatPoints = character.StatPoints
+                },
+                Title = character.Title ?? "",
+                Usage = character.Usage,
                 SessionId = playerConnection.SessionId,
                 Level = character.Level,
                 LoginMessageCode = character.Usage switch

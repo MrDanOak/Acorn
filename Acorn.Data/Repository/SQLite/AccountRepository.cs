@@ -1,4 +1,4 @@
-﻿using Acorn.Data.Models;
+﻿using Acorn.Data;
 using Dapper;
 using Microsoft.Extensions.Logging;
 using OneOf;
@@ -6,7 +6,7 @@ using OneOf.Types;
 using System.Data;
 
 namespace Acorn.Data.Repository.SQLite;
-public class AccountRepository: IRepository<Account>, IDisposable
+public class AccountRepository: IDbRepository<Account>, IDisposable
 {
     private readonly IDbConnection _conn;
     private readonly ILogger<AccountRepository> _logger;

@@ -1,9 +1,9 @@
-﻿using Acorn.Data.Models;
+﻿using Acorn.Data;
 using OneOf;
 using OneOf.Types;
 
 namespace Acorn.Data.Repository.MSSQL;
-public class CharacterRepository : IRepository<Character>
+public class CharacterRepository : IDbRepository<Character>
 {
     public Task<OneOf<Success, Error>> CreateAsync(Character entity)
     {

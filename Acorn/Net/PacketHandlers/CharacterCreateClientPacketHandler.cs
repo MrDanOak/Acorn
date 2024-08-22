@@ -1,4 +1,4 @@
-﻿using Acorn.Data.Models;
+﻿using Acorn.Data;
 using Acorn.Data.Repository;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
@@ -11,12 +11,12 @@ using OneOf.Types;
 namespace Acorn.Net.PacketHandlers;
 internal class CharacterCreateClientPacketHandler : IPacketHandler<CharacterCreateClientPacket>
 {
-    private readonly IRepository<Character> _repository;
+    private readonly IDbRepository<Character> _repository;
     private readonly ILogger<CharacterCreateClientPacketHandler> _logger;
     private readonly IMapper _mapper;
 
     public CharacterCreateClientPacketHandler(
-        IRepository<Character> repository,
+        IDbRepository<Character> repository,
         ILogger<CharacterCreateClientPacketHandler> logger,
         IMapper mapper
     )

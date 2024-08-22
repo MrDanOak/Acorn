@@ -1,18 +1,18 @@
-﻿using Acorn.Data.Models;
+﻿using Acorn.Data;
 using Acorn.Data.Repository;
 using Microsoft.Extensions.Logging;
 
-namespace Acorn.Services;
+namespace Acorn.Infrastructure;
 public class StatsReporter : IStatsReporter
 {
     private readonly ILogger<StatsReporter> _logger;
-    private readonly IRepository<Account> _accountRepository;
-    private readonly IDataRepository _dataRepository;
+    private readonly IDbRepository<Account> _accountRepository;
+    private readonly IDataFileRepository _dataRepository;
 
     public StatsReporter(
         ILogger<StatsReporter> logger,
-        IRepository<Account> accountRepository,
-        IDataRepository dataRepository
+        IDbRepository<Account> accountRepository,
+        IDataFileRepository dataRepository
     )
     {
         _logger = logger;

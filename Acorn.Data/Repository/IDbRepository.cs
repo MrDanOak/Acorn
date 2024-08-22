@@ -3,10 +3,10 @@ using OneOf.Types;
 
 namespace Acorn.Data.Repository;
 
-public interface IRepository<T> : IRepository<T, string> where T : class
+public interface IDbRepository<T> : IDbRepository<T, string> where T : class
 { }
 
-public interface IRepository<T, TKey> where T : class
+public interface IDbRepository<T, TKey> where T : class
 {
     Task<OneOf<Success<IEnumerable<T>>, Error>> GetAll();
     Task<OneOf<Success<T>, NotFound, Error>> GetByKey(TKey key);

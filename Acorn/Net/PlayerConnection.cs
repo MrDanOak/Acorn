@@ -1,5 +1,5 @@
-﻿using Acorn.Data.Models;
-using Acorn.Extensions;
+﻿using Acorn.Data;
+using Acorn.Infrastructure.Extensions;
 using Acorn.Net.Models;
 using Acorn.Net.PacketHandlers;
 using Microsoft.Extensions.Logging;
@@ -84,7 +84,7 @@ public class PlayerConnection : IDisposable
 
                 var packet = _resolver.Create(family, action);
                 packet.Deserialize(dataReader);
-                _logger.LogDebug("Request: {Packet}", packet.ToString());
+                _logger.LogDebug("[Client] {Packet}", packet.ToString());
 
                 var handlerType = typeof(IPacketHandler<>).MakeGenericType(packet.GetType());
                 if (_serviceProvider.GetService(handlerType) is not IHandler handler)
@@ -136,6 +136,7 @@ public class PlayerConnection : IDisposable
 
     public async Task Send(IPacket packet)
     {
+        _logger.LogDebug("[Server] {Packet}", packet.ToString());
         var writer = new EoWriter();
         writer.AddByte((int)packet.Action);
         writer.AddByte((int)packet.Family);
@@ -151,7 +152,6 @@ public class PlayerConnection : IDisposable
         var encodedLength = NumberEncoder.EncodeNumber(bytes.Length);
         var fullBytes = encodedLength[..2].Concat(bytes);
         await TcpClient.GetStream().WriteAsync(fullBytes.AsReadOnly(), new CancellationToken());
-        _logger.LogDebug("Response: {Packet}", packet.ToString());
     }
 
     public void Dispose()

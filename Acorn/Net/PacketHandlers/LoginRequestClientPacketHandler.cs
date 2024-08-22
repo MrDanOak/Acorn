@@ -1,4 +1,4 @@
-﻿using Acorn.Data.Models;
+﻿using Acorn.Data;
 using Acorn.Data.Repository;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
@@ -10,12 +10,12 @@ using OneOf.Types;
 namespace Acorn.Net.PacketHandlers;
 public class LoginRequestClientPacketHandler(
     ILogger<LoginRequestClientPacketHandler> logger,
-    IRepository<Account> repository,
+    IDbRepository<Account> repository,
     IMapper mapper
 ) : IPacketHandler<LoginRequestClientPacket>
 {
     private readonly ILogger<LoginRequestClientPacketHandler> _logger = logger;
-    private readonly IRepository<Account> _repository = repository;
+    private readonly IDbRepository<Account> _repository = repository;
     private readonly IMapper _mapper = mapper;
 
     public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, LoginRequestClientPacket packet)

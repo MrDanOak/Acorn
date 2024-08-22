@@ -1,4 +1,4 @@
-﻿namespace Acorn.Extensions;
+﻿namespace Acorn.Infrastructure.Extensions;
 
 public static class ByteExtensions
 {
@@ -8,4 +8,3 @@ public static class ByteExtensions
         return new ReadOnlyMemory<byte>(byteArray);
     }
 }
-

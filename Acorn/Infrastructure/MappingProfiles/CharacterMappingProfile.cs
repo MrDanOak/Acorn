@@ -1,9 +1,9 @@
-﻿using Acorn.Data.Models;
+﻿using Acorn.Data;
 using AutoMapper;
 using Moffat.EndlessOnline.SDK.Protocol;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
 
-namespace Acorn.MappingProfiles;
+namespace Acorn.Infrastructure.MappingProfiles;
 public class CharacterMappingProfile : Profile
 {
     public CharacterMappingProfile()

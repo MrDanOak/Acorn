@@ -38,18 +38,10 @@ CREATE TABLE IF NOT EXISTS Characters (
     StatPoints INTEGER NOT NULL,
     SkillPoints INTEGER NOT NULL,
     Karma INTEGER NOT NULL,
-    Sitting INTEGER NOT NULL,
+    SitState INTEGER NOT NULL,
     Hidden INTEGER NOT NULL,
     NoInteract INTEGER NOT NULL,
     BankMax INTEGER NOT NULL,
     GoldBank INTEGER NOT NULL,
-    Usage INTEGER NOT NULL,
-    Inventory TEXT,
-    Bank TEXT,
-    Paperdoll TEXT,
-    Spells TEXT,
-    Guild TEXT,
-    GuildRank INTEGER,
-    GuildRankString TEXT,
-    Quest TEXT
+    Usage INTEGER NOT NULL
 );
