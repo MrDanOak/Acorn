@@ -13,4 +13,13 @@
 		<PackageReference Include="Moffat.EndlessOnline.SDK" Version="1.0.0-rc3" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Update="Database\MSSQL\Init.sql">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Database\SQLite\Init.sql">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+
 </Project>
