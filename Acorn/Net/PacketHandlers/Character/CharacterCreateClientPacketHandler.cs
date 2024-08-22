@@ -8,15 +8,15 @@ using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
 using OneOf;
 using OneOf.Types;
 
-namespace Acorn.Net.PacketHandlers;
+namespace Acorn.Net.PacketHandlers.Character;
 internal class CharacterCreateClientPacketHandler : IPacketHandler<CharacterCreateClientPacket>
 {
-    private readonly IDbRepository<Character> _repository;
+    private readonly IDbRepository<Data.Character> _repository;
     private readonly ILogger<CharacterCreateClientPacketHandler> _logger;
     private readonly IMapper _mapper;
 
     public CharacterCreateClientPacketHandler(
-        IDbRepository<Character> repository,
+        IDbRepository<Data.Character> repository,
         ILogger<CharacterCreateClientPacketHandler> logger,
         IMapper mapper
     )
@@ -43,8 +43,8 @@ internal class CharacterCreateClientPacketHandler : IPacketHandler<CharacterCrea
             return new Success();
         }
 
-        var character = new Character()
-        { 
+        var character = new Data.Character()
+        {
             Name = packet.Name,
             Race = packet.Skin,
             Admin = packet.Name.ToLower() switch
@@ -70,7 +70,8 @@ internal class CharacterCreateClientPacketHandler : IPacketHandler<CharacterCrea
             ReplyCode = CharacterReply.Ok,
             ReplyCodeData = new CharacterReplyServerPacket.ReplyCodeDataOk
             {
-                Characters = playerConnection.CurrentPlayer.Characters.Select((c, id) => {
+                Characters = playerConnection.CurrentPlayer.Characters.Select((c, id) =>
+                {
                     var entry = _mapper.Map<CharacterSelectionListEntry>(c);
                     entry.Id = id;
                     return entry;

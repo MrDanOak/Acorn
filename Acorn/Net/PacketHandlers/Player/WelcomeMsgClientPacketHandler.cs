@@ -7,7 +7,7 @@ using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
 using OneOf;
 using OneOf.Types;
 
-namespace Acorn.Net.PacketHandlers;
+namespace Acorn.Net.PacketHandlers.Player;
 internal class WelcomeMsgClientPacketHandler : IPacketHandler<WelcomeMsgClientPacket>
 {
     private readonly IDataFileRepository _dataRepository;

@@ -8,7 +8,7 @@ using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
 using OneOf;
 using OneOf.Types;
 
-namespace Acorn.Net.PacketHandlers;
+namespace Acorn.Net.PacketHandlers.Player;
 internal class WelcomeRequestClientPacketHandler : IPacketHandler<WelcomeRequestClientPacket>
 {
     private readonly ISessionGenerator _sessionGenerator;

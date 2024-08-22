@@ -1,5 +1,4 @@
-﻿using Acorn.Data;
-using Acorn.Data.Repository;
+﻿using Acorn.Data.Repository;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Client;
@@ -7,15 +6,15 @@ using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
 using OneOf;
 using OneOf.Types;
 
-namespace Acorn.Net.PacketHandlers;
+namespace Acorn.Net.PacketHandlers.Account;
 public class LoginRequestClientPacketHandler(
     ILogger<LoginRequestClientPacketHandler> logger,
-    IDbRepository<Account> repository,
+    IDbRepository<Data.Account> repository,
     IMapper mapper
 ) : IPacketHandler<LoginRequestClientPacket>
 {
     private readonly ILogger<LoginRequestClientPacketHandler> _logger = logger;
-    private readonly IDbRepository<Account> _repository = repository;
+    private readonly IDbRepository<Data.Account> _repository = repository;
     private readonly IMapper _mapper = mapper;
 
     public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, LoginRequestClientPacket packet)

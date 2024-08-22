@@ -1,7 +1,5 @@
-﻿using Acorn.Data;
-using Acorn.Data.Repository;
+﻿using Acorn.Data.Repository;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualBasic;
 using Moffat.EndlessOnline.SDK.Data;
 using Moffat.EndlessOnline.SDK.Packet;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Client;
@@ -9,13 +7,13 @@ using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
 using OneOf;
 using OneOf.Types;
 
-namespace Acorn.Net.PacketHandlers;
+namespace Acorn.Net.PacketHandlers.Account;
 internal class AccountRequestClientPacketHandler(
-    IDbRepository<Account> accountRepository, 
+    IDbRepository<Data.Account> accountRepository,
     ILogger<AccountRequestClientPacket> logger
 ) : IPacketHandler<AccountRequestClientPacket>
 {
-    private readonly IDbRepository<Account> _accountRepository = accountRepository;
+    private readonly IDbRepository<Data.Account> _accountRepository = accountRepository;
     private readonly ILogger<AccountRequestClientPacket> _logger = logger;
 
     public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, AccountRequestClientPacket packet)

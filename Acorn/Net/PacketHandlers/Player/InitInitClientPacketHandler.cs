@@ -7,7 +7,7 @@ using OneOf;
 using Microsoft.Extensions.Logging;
 using Acorn.Net.Models;
 
-namespace Acorn.Net.PacketHandlers;
+namespace Acorn.Net.PacketHandlers.Player;
 
 internal class InitInitClientPacketHandler(ILogger<InitInitClientPacketHandler> logger) : IPacketHandler<InitInitClientPacket>
 {

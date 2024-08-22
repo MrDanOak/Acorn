@@ -2,7 +2,7 @@
 using OneOf;
 using OneOf.Types;
 
-namespace Acorn.Net.PacketHandlers;
+namespace Acorn.Net.PacketHandlers.Player;
 internal class ConnectionPingClientPacketHandler : IPacketHandler<ConnectionPingClientPacket>
 {
     public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, ConnectionPingClientPacket packet)

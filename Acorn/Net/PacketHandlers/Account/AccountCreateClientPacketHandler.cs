@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Acorn.Data;
 using Acorn.Data.Repository;
 using Microsoft.Extensions.Logging;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Client;
@@ -9,14 +8,14 @@ using OneOf.Types;
 using System.Text;
 using Acorn.Services.Security;
 
-namespace Acorn.Net.PacketHandlers;
+namespace Acorn.Net.PacketHandlers.Account;
 internal class AccountCreateClientPacketHandler(
-    IDbRepository<Account> accountRepository,
+    IDbRepository<Data.Account> accountRepository,
     IMapper mapper,
     ILogger<AccountCreateClientPacketHandler> logger
 ) : IPacketHandler<AccountCreateClientPacket>
 {
-    private readonly IDbRepository<Account> _accountRepository = accountRepository;
+    private readonly IDbRepository<Data.Account> _accountRepository = accountRepository;
     private readonly IMapper _mapper = mapper;
     private readonly ILogger<AccountCreateClientPacketHandler> _logger = logger;
 
@@ -38,7 +37,7 @@ internal class AccountCreateClientPacketHandler(
             return new Success();
         }
 
-        var account = _mapper.Map<Account>(packet);
+        var account = _mapper.Map<Data.Account>(packet);
         account.Password = Hash.HashPassword(packet.Username, packet.Password, out var salt);
         account.Salt = Encoding.UTF8.GetString(salt);
 

@@ -5,7 +5,7 @@ using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
 using OneOf;
 using OneOf.Types;
 
-namespace Acorn.Net.PacketHandlers;
+namespace Acorn.Net.PacketHandlers.Player;
 public class WelcomeAgreeClientPacketHandler : IPacketHandler<WelcomeAgreeClientPacket>
 {
     private readonly IDataFileRepository _dataRepository;
@@ -26,12 +26,14 @@ public class WelcomeAgreeClientPacketHandler : IPacketHandler<WelcomeAgreeClient
             FileType.Esf => () => _dataRepository.Esf.Serialize(eoWriter),
             FileType.Enf => () => _dataRepository.Enf.Serialize(eoWriter),
             FileType.Ecf => () => _dataRepository.Ecf.Serialize(eoWriter),
-            FileType.Emf => () => {
-                var map = _dataRepository.Maps.FirstOrDefault(map => map.Id == playerConnection.Character.Map)?.Map ?? 
+            FileType.Emf => () =>
+            {
+                var map = _dataRepository.Maps.FirstOrDefault(map => map.Id == playerConnection.Character.Map)?.Map ??
                     throw new ArgumentOutOfRangeException($"Could not find map {playerConnection.Character.Map} for character {playerConnection.Character.Name}");
 
                 map.Serialize(eoWriter);
-            },
+            }
+            ,
             _ => throw new InvalidOperationException($"Unknown file type {packet.FileType}")
         };
         serialise();

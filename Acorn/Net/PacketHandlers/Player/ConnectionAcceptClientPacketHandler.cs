@@ -3,7 +3,7 @@ using Moffat.EndlessOnline.SDK.Protocol.Net.Client;
 using OneOf;
 using OneOf.Types;
 
-namespace Acorn.Net.PacketHandlers;
+namespace Acorn.Net.PacketHandlers.Player;
 public class ConnectionAcceptClientPacketHandler(
     ILogger<ConnectionAcceptClientPacketHandler> logger
 ) : IPacketHandler<ConnectionAcceptClientPacket>
@@ -22,6 +22,6 @@ public class ConnectionAcceptClientPacketHandler(
         return new Success();
     }
 
-    public Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, object packet) 
+    public Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, object packet)
         => HandleAsync(playerConnection, (ConnectionAcceptClientPacket)packet);
 }

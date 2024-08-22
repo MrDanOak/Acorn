@@ -4,7 +4,7 @@ using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
 using OneOf;
 using OneOf.Types;
 
-namespace Acorn.Net.PacketHandlers;
+namespace Acorn.Net.PacketHandlers.Character;
 internal class CharacterRequestClientPacketHandler : IPacketHandler<CharacterRequestClientPacket>
 {
     private readonly IMapper _mapper;
@@ -36,7 +36,8 @@ internal class CharacterRequestClientPacketHandler : IPacketHandler<CharacterReq
             ReplyCode = CharacterReply.Ok,
             ReplyCodeData = new CharacterReplyServerPacket.ReplyCodeDataOk
             {
-                Characters = playerConnection.CurrentPlayer.Characters.Select((x, id) => {
+                Characters = playerConnection.CurrentPlayer.Characters.Select((x, id) =>
+                {
                     var entry = _mapper.Map<CharacterSelectionListEntry>(x);
                     entry.Id = id;
                     return entry;
