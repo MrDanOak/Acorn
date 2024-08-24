@@ -27,6 +27,9 @@ public class WorldState
             map.Tick();
         }
     }
+
+    public MapState MapFor(PlayerConnection player) 
+        => Maps.Single(x => x.HasPlayer(player));
 }
 
 public class MapState
@@ -41,6 +44,11 @@ public class MapState
     {
         Id = data.Id;
         Data = data.Map;
+    }
+
+    public bool HasPlayer(PlayerConnection player)
+    {
+        return Players.Contains(player);
     }
 
     public void Enter(PlayerConnection player)

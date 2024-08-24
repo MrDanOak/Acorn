@@ -1,4 +1,5 @@
 ﻿using Acorn.Data;
+using Acorn.Infrastructure;
 using Acorn.Infrastructure.Extensions;
 using Acorn.Net.Models;
 using Acorn.Net.PacketHandlers;
@@ -22,7 +23,6 @@ public class PlayerConnection : IDisposable
     public Random Rnd { get; } = new();
 
     public ClientState ClientState { get; set; } = ClientState.Uninitialized;
-    public int Id { get; private set; } = 0;
     public bool NeedPong { get; set; } = false;
     public int ClientEncryptionMulti { get; set; } = 0;
     public int ServerEncryptionMulti { get; set; } = 0;
@@ -37,7 +37,8 @@ public class PlayerConnection : IDisposable
         IServiceProvider services,
         TcpClient tcpClient,
         ILogger<PlayerConnection> logger,
-        Action<PlayerConnection> onDispose
+        Action<PlayerConnection> onDispose,
+        ISessionGenerator sessionGenerator
     )
     {
         TcpClient = tcpClient;
@@ -47,7 +48,7 @@ public class PlayerConnection : IDisposable
         _onDispose = onDispose;
         _serviceProvider = services;
 
-        Id = Rnd.Next(10000) + 20000;
+        SessionId = sessionGenerator.Generate();
         StartSequence = InitSequenceStart.Generate(Rnd);
         Task.Run(Listen);
     }

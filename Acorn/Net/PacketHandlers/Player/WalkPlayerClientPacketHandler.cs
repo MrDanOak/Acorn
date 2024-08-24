@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Moffat.EndlessOnline.SDK.Protocol;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Client;
+using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
 using OneOf;
 using OneOf.Types;
 
@@ -31,14 +32,24 @@ internal class WalkPlayerClientPacketHandler : IPacketHandler<WalkPlayerClientPa
             _ => playerConnection.Character.Y
         };
 
-        var map = _world.Maps.FirstOrDefault(x => x.Id == playerConnection.Character.Map);
+        playerConnection.Character.Direction = packet.WalkAction.Direction;
 
-        var otherPlayers = map.Players.Where(x => x.Character.Map == map.Id).ToList();
+        var map = _world.MapFor(playerConnection);
 
-        otherPlayers.ForEach(player =>
+        var otherPlayers = map.Players
+            .Where(x => x.Character.Map == map.Id).Where(x => x != playerConnection).ToList();
+
+        otherPlayers.ForEach(async otherPlayer =>
         {
-            player.Send(new WalkPlayerClientPacket
+            await otherPlayer.Send(new WalkPlayerServerPacket
             {
+                Direction = playerConnection.Character.Direction,
+                PlayerId = playerConnection.SessionId,
+                Coords = new Coords
+                {
+                    X = playerConnection.Character.X,
+                    Y = playerConnection.Character.Y
+                }
             });
         });
 

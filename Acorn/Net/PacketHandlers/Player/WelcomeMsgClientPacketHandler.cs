@@ -27,37 +27,15 @@ internal class WelcomeMsgClientPacketHandler : IPacketHandler<WelcomeMsgClientPa
         playerConnection.ClientState = ClientState.InGame;
         var map = _world.Maps.First(x => x.Id == playerConnection.Character.Map);
 
-        map.Enter(playerConnection);
-
-        var characters = map.Players
+        var otherPlayersOnMap = map.Players
             .Where(x => x.Character != null)
-            .Select(x => new CharacterMapInfo
-            {
-                Name = x.Character.Name,
-                Coords = new BigCoords
-                {
-                    X = x.Character.X,
-                    Y = x.Character.Y
-                },
-                Direction = x.Character.Direction,
-                ClassId = x.Character.Class,
-                HairColor = x.Character.HairColor,
-                HairStyle = x.Character.HairStyle,
-                Gender = x.Character.Gender,
-                Hp = x.Character.Hp,
-                Tp = x.Character.Tp,
-                MaxHp = x.Character.MaxHp,
-                MaxTp = x.Character.MaxTp,
-                Level = x.Character.Level,
-                MapId = x.Character.Map,
-                SitState = x.Character.SitState,
-                Skin = x.Character.Race,
-                PlayerId = x.SessionId,
-                Equipment = new(),
-                Invisible = x.Character.Hidden,
-                WarpEffect = WarpEffect.None,
-                GuildTag = "   "
-            }).ToList();
+            .ToList();
+
+        var playersOnMapWithThisCharacater = otherPlayersOnMap
+            .Concat(new List<PlayerConnection> { playerConnection })
+            .ToList();
+
+        map.Enter(playerConnection);
 
         await playerConnection.Send(new WelcomeReplyServerPacket()
         {
@@ -73,12 +51,29 @@ internal class WelcomeMsgClientPacketHandler : IPacketHandler<WelcomeMsgClientPa
                 },
                 Nearby = new NearbyInfo
                 {
-                    Characters = characters,
+                    Characters = playersOnMapWithThisCharacater
+                        .Select(x => x.Character.AsCharacterMapInfo(x.SessionId)).ToList(),
                     Items = [],
                     Npcs = []
                 }
             }
         });
+
+        otherPlayersOnMap.ForEach(async otherPlayer =>
+            await otherPlayer.Send(new PlayersAgreeServerPacket
+            {
+                Nearby = new NearbyInfo
+                {
+                    Characters = new List<CharacterMapInfo>
+                    {
+                        playerConnection.Character.AsCharacterMapInfo(playerConnection.SessionId)
+                    }.Concat(otherPlayersOnMap.Where(x => x != otherPlayer).Select(x => x.Character.AsCharacterMapInfo(x.SessionId)))
+                    .ToList(),
+                    Items = [],
+                    Npcs = []
+                }
+            })
+        );
         return new Success();
     }
 

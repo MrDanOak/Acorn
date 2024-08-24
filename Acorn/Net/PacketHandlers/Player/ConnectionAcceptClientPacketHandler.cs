@@ -15,14 +15,14 @@ public class ConnectionAcceptClientPacketHandler(
 
     public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, ConnectionAcceptClientPacket packet)
     {
-        if (playerConnection.Id != packet.PlayerId)
+        if (playerConnection.SessionId != packet.PlayerId)
         {
-            _logger.LogError("Mismatch PlayerId. Got {Actual} from packet but expected to be {Expected} from server records. Dropping connection.", packet.PlayerId, playerConnection.Id);
+            _logger.LogError("Mismatch PlayerId. Got {Actual} from packet but expected to be {Expected} from server records. Dropping connection.", packet.PlayerId, playerConnection.SessionId);
             return new Error();
         }
 
         playerConnection.SessionId = _sessionGenerator.Generate();
-        _logger.LogDebug("Got expected connection accept packet from {Location} for player id {PlayerId}", playerConnection.TcpClient.Client.RemoteEndPoint, playerConnection.Id);
+        _logger.LogDebug("Got expected connection accept packet from {Location} for player id {PlayerId}", playerConnection.TcpClient.Client.RemoteEndPoint, playerConnection.SessionId);
         return new Success();
     }
 

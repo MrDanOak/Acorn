@@ -85,6 +85,46 @@ public class Character
         );
     }
 
+    public CharacterMapInfo AsCharacterMapInfo(int playerId) => new()
+    {
+        ClassId = Class,
+        Direction = Direction,
+        Coords = new BigCoords { X = X, Y = Y },
+        Equipment = new EquipmentMapInfo(),
+        WarpEffect = WarpEffect.None,
+        Gender = Gender,
+        GuildTag = "   ",//todo: guilds
+        HairColor = HairColor,
+        HairStyle = HairStyle,
+        Hp = Hp,
+        MaxHp = MaxHp,
+        MapId = Map,
+        MaxTp = MaxTp,
+        Name = Name,
+        Invisible = Hidden,
+        Level = Level,
+        PlayerId = playerId,
+        SitState = SitState,
+        Tp = Tp,
+        Skin = Race
+    };
+
+    public OnlinePlayer AsOnlinePlayer() => new()
+    {
+        ClassId = Class,
+        GuildTag = "   ", //todo: guilds
+        Icon = Admin switch
+        {
+            0 => CharacterIcon.Player,
+            1 or 2 or 3 => CharacterIcon.Gm,
+            _ => CharacterIcon.Hgm
+            // todo: handle party
+        },
+        Level = Level,
+        Name = Name,
+        Title = Title ?? ""
+    };
+
     public OneOf<Success<IEnumerable<Item>>, Error<string>> Items()
     {
         return new Success<IEnumerable<Item>>(Inventory.Items.Select(x => new Item

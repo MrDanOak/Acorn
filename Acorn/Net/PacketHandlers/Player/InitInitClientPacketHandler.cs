@@ -19,7 +19,7 @@ internal class InitInitClientPacketHandler(ILogger<InitInitClientPacketHandler> 
         playerConnection.ClientEncryptionMulti = playerConnection.Rnd.Next(7) + 6;
         playerConnection.ServerEncryptionMulti = playerConnection.Rnd.Next(7) + 6;
 
-        _logger.LogDebug("Sending Init Server Packet with Seq 1: {Seq1}, Seq 2: {Seq2} PlayerId: {PlayerId}", playerConnection.StartSequence.Seq1, playerConnection.StartSequence.Seq2, playerConnection.Id);
+        _logger.LogDebug("Sending Init Server Packet with Seq 1: {Seq1}, Seq 2: {Seq2} PlayerId: {PlayerId}", playerConnection.StartSequence.Seq1, playerConnection.StartSequence.Seq2, playerConnection.SessionId);
         await playerConnection.Send(new InitInitServerPacket
         {
             ReplyCode = InitReply.Ok,
@@ -29,7 +29,7 @@ internal class InitInitClientPacketHandler(ILogger<InitInitClientPacketHandler> 
                 Seq2 = playerConnection.StartSequence.Seq2,
                 ClientEncryptionMultiple = playerConnection.ClientEncryptionMulti,
                 ServerEncryptionMultiple = playerConnection.ServerEncryptionMulti,
-                PlayerId = playerConnection.Id,
+                PlayerId = playerConnection.SessionId,
                 ChallengeResponse = ServerVerifier.Hash(packet.Challenge)
             }
         });

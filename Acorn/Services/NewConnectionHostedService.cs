@@ -16,7 +16,8 @@ public class NewConnectionHostedService(
     ILogger<PlayerConnection> playerConnectionLogger,
     IStatsReporter statsReporter,
     WorldState worldState,
-    IDbRepository<Character> characterRepository
+    IDbRepository<Character> characterRepository,
+    ISessionGenerator sessionGenerator
 ) : IHostedService, IDisposable
 {
     private readonly TcpListener _listener = new(IPAddress.Loopback, 8078);
@@ -56,7 +57,7 @@ public class NewConnectionHostedService(
 
                 _logger.LogInformation("Player disconnected");
                 UpdateConnectedCount();
-            }));
+            }, sessionGenerator));
 
             _logger.LogInformation("Connection accepted. {PlayersConnected} players connected", _world.Players.Count);
             UpdateConnectedCount();
