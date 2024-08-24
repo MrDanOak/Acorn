@@ -1,6 +1,7 @@
 ﻿using Acorn.Data.Repository;
 using Acorn.Net;
 using Moffat.EndlessOnline.SDK.Protocol.Map;
+using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
 using Moffat.EndlessOnline.SDK.Protocol.Pub;
 using System.Collections.Concurrent;
 using System.Data;
@@ -54,11 +55,37 @@ public class MapState
     public void Enter(PlayerConnection player)
     {
         Players.Add(player);
+        Players.Where(x => x != player)
+            .ToList()
+            .ForEach(async otherPlayer =>
+                await otherPlayer.Send(new PlayersAgreeServerPacket
+                {
+                    Nearby = new NearbyInfo
+                    {
+                        Characters = Players.Where(x => x != otherPlayer).Select(x => x.Character.AsCharacterMapInfo(x.SessionId)).ToList(),
+                        Items = [],
+                        Npcs = []
+                    }
+                })
+            );
     }
 
     public void Leave(PlayerConnection player)
     {
         Players = new ConcurrentBag<PlayerConnection>(Players.Where(p => p != player));
+        Players.ToList().ForEach(async otherPlayer =>
+        {
+            await otherPlayer.Send(new PlayersRemoveServerPacket
+            {
+                PlayerId = player.SessionId,
+            });
+
+            await otherPlayer.Send(new AvatarRemoveServerPacket
+            {
+                PlayerId = player.SessionId,
+                WarpEffect = WarpEffect.Admin
+            });
+        });
     }
 
     public void Tick()

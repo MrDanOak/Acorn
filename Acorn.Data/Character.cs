@@ -91,7 +91,7 @@ public class Character
         Direction = Direction,
         Coords = new BigCoords { X = X, Y = Y },
         Equipment = new EquipmentMapInfo(),
-        WarpEffect = WarpEffect.None,
+        WarpEffect = WarpEffect.Admin,
         Gender = Gender,
         GuildTag = "   ",//todo: guilds
         HairColor = HairColor,
