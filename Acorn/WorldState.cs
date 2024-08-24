@@ -34,8 +34,8 @@ public class MapState
     public int Id { get; set; }
     public Emf Data { get; set; }
 
-    public ConcurrentBag<NpcState> Npcs { get; set; }
-    public ConcurrentBag<PlayerConnection> Players { get; set; }
+    public ConcurrentBag<NpcState> Npcs { get; set; } = new();
+    public ConcurrentBag<PlayerConnection> Players { get; set; } = new();
 
     public MapState(MapWithId data)
     {

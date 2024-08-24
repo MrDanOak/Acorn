@@ -11,17 +11,53 @@ namespace Acorn.Net.PacketHandlers.Player;
 internal class WelcomeMsgClientPacketHandler : IPacketHandler<WelcomeMsgClientPacket>
 {
     private readonly IDataFileRepository _dataRepository;
+    private readonly WorldState _world;
 
     public WelcomeMsgClientPacketHandler(
-        IDataFileRepository dataRepository
+        IDataFileRepository dataRepository,
+        WorldState worldState
     )
     {
         _dataRepository = dataRepository;
+        _world = worldState;
     }
 
     public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, WelcomeMsgClientPacket packet)
     {
         playerConnection.ClientState = ClientState.InGame;
+        var map = _world.Maps.First(x => x.Id == playerConnection.Character.Map);
+
+        map.Enter(playerConnection);
+
+        var characters = map.Players
+            .Where(x => x.Character != null)
+            .Select(x => new CharacterMapInfo
+            {
+                Name = x.Character.Name,
+                Coords = new BigCoords
+                {
+                    X = x.Character.X,
+                    Y = x.Character.Y
+                },
+                Direction = x.Character.Direction,
+                ClassId = x.Character.Class,
+                HairColor = x.Character.HairColor,
+                HairStyle = x.Character.HairStyle,
+                Gender = x.Character.Gender,
+                Hp = x.Character.Hp,
+                Tp = x.Character.Tp,
+                MaxHp = x.Character.MaxHp,
+                MaxTp = x.Character.MaxTp,
+                Level = x.Character.Level,
+                MapId = x.Character.Map,
+                SitState = x.Character.SitState,
+                Skin = x.Character.Race,
+                PlayerId = x.SessionId,
+                Equipment = new(),
+                Invisible = x.Character.Hidden,
+                WarpEffect = WarpEffect.None,
+                GuildTag = "   "
+            }).ToList();
 
         await playerConnection.Send(new WelcomeReplyServerPacket()
         {
@@ -37,36 +73,7 @@ internal class WelcomeMsgClientPacketHandler : IPacketHandler<WelcomeMsgClientPa
                 },
                 Nearby = new NearbyInfo
                 {
-                    Characters = new List<CharacterMapInfo>()
-                    {
-                        new CharacterMapInfo
-                        {
-                            Name = playerConnection.Character.Name,
-                            Coords = new BigCoords
-                            {
-                                X = playerConnection.Character.X,
-                                Y = playerConnection.Character.Y
-                            },
-                            Direction = playerConnection.Character.Direction,
-                            ClassId = playerConnection.Character.Class,
-                            HairColor = playerConnection.Character.HairColor,
-                            HairStyle = playerConnection.Character.HairStyle,
-                            Gender = (Gender)playerConnection.Character.Gender,
-                            Hp = playerConnection.Character.Hp,
-                            Tp = playerConnection.Character.Tp,
-                            MaxHp = playerConnection.Character.MaxHp,
-                            MaxTp = playerConnection.Character.MaxTp,
-                            Level = playerConnection.Character.Level,
-                            MapId = playerConnection.Character.Map,
-                            SitState = playerConnection.Character.SitState,
-                            Skin = playerConnection.Character.Race,
-                            PlayerId = playerConnection.SessionId,
-                            GuildTag = "DAN",
-                            Equipment = new(),
-                            Invisible = playerConnection.Character.Hidden,
-                            WarpEffect = WarpEffect.Admin
-                        }
-                    },
+                    Characters = characters,
                     Items = [],
                     Npcs = []
                 }

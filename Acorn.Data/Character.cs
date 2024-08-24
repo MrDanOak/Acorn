@@ -19,7 +19,7 @@ public class Character
     public string? Partner { get; set; }
     public int Admin { get; set; }
     public int Class { get; set; }
-    public int Gender { get; set; }
+    public Gender Gender { get; set; }
     public int Race { get; set; }
     public int HairStyle { get; set; }
     public int HairColor { get; set; }

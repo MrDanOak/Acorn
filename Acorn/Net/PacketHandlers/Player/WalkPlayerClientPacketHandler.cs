@@ -8,10 +8,12 @@ namespace Acorn.Net.PacketHandlers.Player;
 internal class WalkPlayerClientPacketHandler : IPacketHandler<WalkPlayerClientPacket>
 {
     private readonly ILogger<WalkPlayerClientPacketHandler> _logger;
+    private readonly WorldState _world;
 
-    public WalkPlayerClientPacketHandler(ILogger<WalkPlayerClientPacketHandler> logger)
+    public WalkPlayerClientPacketHandler(ILogger<WalkPlayerClientPacketHandler> logger, WorldState world)
     {
         _logger = logger;
+        _world = world;
     }
 
     public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, WalkPlayerClientPacket packet)
@@ -29,16 +31,16 @@ internal class WalkPlayerClientPacketHandler : IPacketHandler<WalkPlayerClientPa
             _ => playerConnection.Character.Y
         };
 
-        //if (playerConnection.Character.X != packet.WalkAction.Coords.X || playerConnection.Character.Y != packet.WalkAction.Coords.Y)
-        //{
-        //    _logger.LogError("Expected character to have coords ({ExpX},{ExpY}) but found coords ({ActX},{ActY})",
-        //        packet.WalkAction.Coords.X,
-        //        packet.WalkAction.Coords.Y,
-        //        playerConnection.Character.X,
-        //        playerConnection.Character.Y
-        //    );
-        //    return new Error();
-        //}
+        var map = _world.Maps.FirstOrDefault(x => x.Id == playerConnection.Character.Map);
+
+        var otherPlayers = map.Players.Where(x => x.Character.Map == map.Id).ToList();
+
+        otherPlayers.ForEach(player =>
+        {
+            player.Send(new WalkPlayerClientPacket
+            {
+            });
+        });
 
         return new Success();
     }

@@ -41,16 +41,19 @@ public class NewConnectionHostedService(
                 continue;
             }
 
-            _world.Players.Add(new PlayerConnection(_services, client, _playerConnectionLogger, async handler =>
+            _world.Players.Add(new PlayerConnection(_services, client, _playerConnectionLogger, async playerConnection =>
             {
+                if (playerConnection.Character is not null)
+                {
+                    var map = _world.Maps.First(x => x.Id == playerConnection.Character.Map);
+                    map.Leave(playerConnection);
+                    await _characterRepository.UpdateAsync(playerConnection.Character);
+                }
+
                 _world.Players = new ConcurrentBag<PlayerConnection>(
-                    _world.Players.Where(x => x != handler)
+                    _world.Players.Where(x => x != playerConnection)
                 );
 
-                if (handler.Character is not null)
-                {
-                    await _characterRepository.UpdateAsync(handler.Character);
-                }
                 _logger.LogInformation("Player disconnected");
                 UpdateConnectedCount();
             }));

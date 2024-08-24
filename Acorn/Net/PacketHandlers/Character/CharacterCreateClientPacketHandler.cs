@@ -58,7 +58,7 @@ internal class CharacterCreateClientPacketHandler : IPacketHandler<CharacterCrea
             Y = 1,
             HairColor = packet.HairColor,
             HairStyle = packet.HairStyle,
-            Gender = (int)packet.Gender
+            Gender = packet.Gender
         };
 
         await _repository.CreateAsync(character);
