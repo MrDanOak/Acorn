@@ -51,7 +51,7 @@ public class Character
     public int Usage { get; set; }
     public Inventory Inventory { get; set; } = new Inventory([]);
     public Bank Bank { get; set; } = new Bank([]);
-    public Paperdoll Paperdoll { get; set; } = new Paperdoll(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    public Paperdoll Paperdoll { get; set; } = new Paperdoll(0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     //TODO: Add spells
     //TODO: Add guilds
     //TODO: Add quests

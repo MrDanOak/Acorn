@@ -36,7 +36,7 @@ internal class AccountRequestClientPacketHandler(
 
             await playerConnection.Send(new AccountReplyServerPacket()
             {
-                ReplyCode = (AccountReply)1000,
+                ReplyCode = (AccountReply)playerConnection.SessionId,
                 ReplyCodeData = new AccountReplyServerPacket.ReplyCodeDataDefault()
                 {
                     SequenceStart = playerConnection.StartSequence.Seq1

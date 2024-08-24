@@ -33,16 +33,8 @@ internal class CharacterRequestClientPacketHandler : IPacketHandler<CharacterReq
 
         await playerConnection.Send(new CharacterReplyServerPacket
         {
-            ReplyCode = CharacterReply.Ok,
-            ReplyCodeData = new CharacterReplyServerPacket.ReplyCodeDataOk
-            {
-                Characters = playerConnection.CurrentPlayer.Characters.Select((x, id) =>
-                {
-                    var entry = _mapper.Map<CharacterSelectionListEntry>(x);
-                    entry.Id = id;
-                    return entry;
-                }).ToList()
-            }
+            ReplyCode = (CharacterReply)playerConnection.SessionId,
+            ReplyCodeData = new CharacterReplyServerPacket.ReplyCodeDataDefault { }
         });
 
         return new Success();

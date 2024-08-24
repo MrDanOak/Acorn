@@ -10,7 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Moffat.EndlessOnline.SDK.Protocol.Pub;
+using Microsoft.Extensions.Options;
 using System.Data;
 using System.Reflection;
 
@@ -36,8 +36,6 @@ var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .Build();
 
-CheckSqliteIfUsing(configuration);
-
 // service collection builder
 await Host.CreateDefaultBuilder(args)
     .ConfigureServices(services =>
@@ -45,14 +43,20 @@ await Host.CreateDefaultBuilder(args)
         services
             .AddAutoMapper(Assembly.GetExecutingAssembly())
             .AddSingleton<IConfiguration>(configuration)
+            .Configure<DatabaseOptions>(configuration.GetSection("Database"))
             .AddSingleton<UtcNowDelegate>(() => DateTime.UtcNow)
-            .AddTransient<IDbConnection>(sp => configuration["Database:Engine"] switch
-            {
-                "SQLite" => new SqliteConnection(configuration.GetConnectionString("SQLite")),
-                _ => new SqlConnection(configuration.GetConnectionString("MSSQL"))
+            .AddTransient<IDbConnection>(sp => {
+                var dbOptions = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
+                var connectionString = dbOptions.ConnectionString;
+                return (dbOptions.Engine ?? "").ToLower() switch
+                {
+                    "sqlite" => new SqliteConnection(connectionString),
+                    _ => new SqlConnection(connectionString)
+                };
             })
             .AddSingleton<IStatsReporter, StatsReporter>()
             .AddSingleton<ISessionGenerator, SessionGenerator>()
+            .AddTransient<IDbInitialiser, DbInitialiser>()
             .AddHostedService<NewConnectionHostedService>()
             .AddHostedService<WorldHostedService>()
             .AddSingleton<WorldState>()
@@ -69,26 +73,6 @@ await Host.CreateDefaultBuilder(args)
     })
     .Build()
     .RunAsync();
-
-void CheckSqliteIfUsing(IConfiguration configuration)
-{
-    if (configuration["Database:Engine"]?.ToLower() != "sqlite")
-    {
-        return;
-    }
-
-    if (File.Exists(configuration.GetConnectionString("SQLite")))
-    {
-        return;
-    }
-
-    var sqliteConnection = new SqliteConnection(configuration.GetConnectionString("SQLite"));
-    sqliteConnection.Open();
-    using var command = sqliteConnection.CreateCommand();
-    command.CommandText = File.ReadAllText("Database/SQLite/Init.sql");
-    command.ExecuteNonQuery();
-    sqliteConnection.Close();
-}
 
 static class IocRegistrations
 {
@@ -113,22 +97,8 @@ static class IocRegistrations
 
     public static IServiceCollection AddRepositories(this IServiceCollection services)
     => services
-            .AddTransient<Acorn.Data.Repository.MSSQL.AccountRepository>()
-            .AddTransient<Acorn.Data.Repository.SQLite.AccountRepository>()
-            .AddTransient<Acorn.Data.Repository.MSSQL.CharacterRepository>()
-            .AddTransient<Acorn.Data.Repository.SQLite.CharacterRepository>()
-            .AddTransient<IDbRepository<Account>>(provider =>
-                provider.GetRequiredService<IConfiguration>()["Database:Engine"]?.ToLower() switch
-                {
-                    "sqlite" => provider.GetRequiredService<Acorn.Data.Repository.SQLite.AccountRepository>(),
-                    _ => provider.GetRequiredService<Acorn.Data.Repository.MSSQL.AccountRepository>()
-                })
-            .AddTransient<IDbRepository<Character>>(provider =>
-                provider.GetRequiredService<IConfiguration>()["Database:Engine"]?.ToLower() switch
-                {
-                    "sqlite" => provider.GetRequiredService<Acorn.Data.Repository.SQLite.CharacterRepository>(),
-                    _ => provider.GetRequiredService<Acorn.Data.Repository.MSSQL.CharacterRepository>()
-                })
+            .AddTransient<IDbRepository<Account>, AccountRepository>()
+            .AddTransient<IDbRepository<Character>, CharacterRepository>()
             .AddSingleton<IDataFileRepository, DataFileRepository>()
         ;
 }

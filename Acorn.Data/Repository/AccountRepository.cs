@@ -1,23 +1,41 @@
-﻿using Acorn.Data;
-using Dapper;
+﻿using Dapper;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OneOf;
 using OneOf.Types;
 using System.Data;
 
-namespace Acorn.Data.Repository.SQLite;
-public class AccountRepository: IDbRepository<Account>, IDisposable
+namespace Acorn.Data.Repository;
+public class AccountRepository : BaseDbRepository, IDbRepository<Account>, IDisposable
 {
     private readonly IDbConnection _conn;
     private readonly ILogger<AccountRepository> _logger;
+    public static class SQLStatements
+    {
+        public static string Create = "";
+        public static string Update = "";
+        public static string GetByKey = "";
+        public static string Delete = "";
+        public static string GetCharacters = "";
+        public static string GetAll = "";
+    }
 
     public AccountRepository(
         IDbConnection conn,
-        ILogger<AccountRepository> logger
-    )
+        ILogger<AccountRepository> logger,
+        IOptions<DatabaseOptions> options,
+        IDbInitialiser initialiser
+    ) : base(initialiser)
     {
         _conn = conn;
         _logger = logger;
+
+        SQLStatements.Create = File.ReadAllText($"Database/{options.Value.Engine}/Account/Create.sql");
+        SQLStatements.Update = File.ReadAllText($"Database/{options.Value.Engine}/Account/Update.sql");
+        SQLStatements.GetByKey = File.ReadAllText($"Database/{options.Value.Engine}/Account/GetByKey.sql");
+        SQLStatements.Delete = File.ReadAllText($"Database/{options.Value.Engine}/Account/Delete.sql");
+        SQLStatements.GetCharacters = File.ReadAllText($"Database/{options.Value.Engine}/Account/GetCharacters.sql");
+        SQLStatements.GetAll = File.ReadAllText($"Database/{options.Value.Engine}/Account/GetAll.sql");
 
         if (_conn.State != ConnectionState.Open)
         {
@@ -30,30 +48,7 @@ public class AccountRepository: IDbRepository<Account>, IDisposable
         using var t = _conn.BeginTransaction(IsolationLevel.ReadCommitted);
         try
         {
-            await _conn.ExecuteAsync("""
-            INSERT INTO Accounts
-            (
-                Username,
-                Password,
-                FullName,
-                Location,
-                Email,
-                Country,
-                Created,
-                LastUsed
-            )
-            VALUES
-            (
-                @Username,
-                @Password,
-                @FullName,
-                @Location,
-                @Email,
-                @Country,
-                @Created,
-                @LastUsed
-            )
-            """, entity);
+            await _conn.ExecuteAsync(SQLStatements.Create, entity);
 
             t.Commit();
         }
@@ -72,9 +67,7 @@ public class AccountRepository: IDbRepository<Account>, IDisposable
         using var t = _conn.BeginTransaction();
         try
         {
-            await _conn.ExecuteAsync("""
-            DELETE FROM Accounts WHERE Username = @Username
-            """, new { entity.Username });
+            await _conn.ExecuteAsync(SQLStatements.Delete, new { entity.Username });
         }
         catch (Exception e)
         {
@@ -90,13 +83,13 @@ public class AccountRepository: IDbRepository<Account>, IDisposable
     {
         try
         {
-            var acc = await _conn.QuerySingleOrDefaultAsync<Account>("SELECT * FROM Accounts WHERE Username = @username", new { username });
+            var acc = await _conn.QuerySingleOrDefaultAsync<Account>(SQLStatements.GetByKey, new { username });
             if (acc is null)
             {
                 return new NotFound();
             }
 
-            acc.Characters = (await _conn.QueryAsync<Character>("SELECT * FROM Characters WHERE Accounts_Username = @username", new { username })).ToList();
+            acc.Characters = (await _conn.QueryAsync<Character>(SQLStatements.GetCharacters, new { username })).ToList();
             return new Success<Account>(acc);
         }
         catch (Exception e)
@@ -111,10 +104,10 @@ public class AccountRepository: IDbRepository<Account>, IDisposable
     {
         try
         {
-            var accounts = (await _conn.QueryAsync<Account>("SELECT * FROM Accounts")).ToList();
+            var accounts = (await _conn.QueryAsync<Account>(SQLStatements.GetAll)).ToList();
             var withCharacters = accounts.Select(async a =>
             {
-                a.Characters = (await _conn.QueryAsync<Character>("SELECT * FROM Characters WHERE Accounts_Username = @username", new { username = a.Username })).ToList();
+                a.Characters = (await _conn.QueryAsync<Character>(SQLStatements.GetCharacters, new { username = a.Username })).ToList();
                 return a;
             });
 
@@ -134,19 +127,7 @@ public class AccountRepository: IDbRepository<Account>, IDisposable
         using var t = _conn.BeginTransaction(IsolationLevel.ReadCommitted);
         try
         {
-            await _conn.ExecuteAsync("""
-            UPDATE Accounts
-            SET
-                Password = @Password,
-                FullName = @FullName,
-                Location = @Location,
-                Email = @Email,
-                Country = @Country,
-                Created = @Created,
-                LastUsed = @LastUsed
-            WHERE Username = @Username
-            """, entity);
-
+            await _conn.ExecuteAsync(SQLStatements.Update, entity);
             t.Commit();
         }
         catch (Exception e)
