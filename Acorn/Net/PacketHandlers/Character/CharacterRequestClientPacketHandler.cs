@@ -21,7 +21,7 @@ internal class CharacterRequestClientPacketHandler : IPacketHandler<CharacterReq
             return new Success();
         }
 
-        if (playerConnection.CurrentPlayer?.Characters.Count() >= 3)
+        if (playerConnection.Account?.Characters.Count() >= 3)
         {
             await playerConnection.Send(new CharacterReplyServerPacket
             {

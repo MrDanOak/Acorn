@@ -41,10 +41,10 @@ public class NewConnectionHostedService(
                 continue;
             }
 
-            _world.PlayerConnections.Add(new PlayerConnection(_services, client, _playerConnectionLogger, async handler =>
+            _world.Players.Add(new PlayerConnection(_services, client, _playerConnectionLogger, async handler =>
             {
-                _world.PlayerConnections = new ConcurrentBag<PlayerConnection>(
-                    _world.PlayerConnections.Where(x => x != handler)
+                _world.Players = new ConcurrentBag<PlayerConnection>(
+                    _world.Players.Where(x => x != handler)
                 );
 
                 if (handler.Character is not null)
@@ -55,14 +55,14 @@ public class NewConnectionHostedService(
                 UpdateConnectedCount();
             }));
 
-            _logger.LogInformation("Connection accepted. {PlayersConnected} players connected", _world.PlayerConnections.Count);
+            _logger.LogInformation("Connection accepted. {PlayersConnected} players connected", _world.Players.Count);
             UpdateConnectedCount();
         }
     }
 
     private void UpdateConnectedCount()
     {
-        Console.Title = $"Acorn Server ({_world.PlayerConnections.Count} Connected)";
+        Console.Title = $"Acorn Server ({_world.Players.Count} Connected)";
     }
 
     public Task StopAsync(CancellationToken cancellationToken)

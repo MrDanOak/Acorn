@@ -9,8 +9,9 @@ namespace Acorn;
 
 public class WorldState
 {
-    public ConcurrentBag<PlayerConnection> PlayerConnections = [];
+    public ConcurrentBag<PlayerConnection> Players = [];
     public ConcurrentBag<MapState> Maps = [];
+
     public WorldState(IDataFileRepository dataRepository)
     {
         foreach (var map in dataRepository.Maps)

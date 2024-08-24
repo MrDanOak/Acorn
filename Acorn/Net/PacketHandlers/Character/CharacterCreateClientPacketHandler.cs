@@ -52,7 +52,7 @@ internal class CharacterCreateClientPacketHandler : IPacketHandler<CharacterCrea
                 "danzo" => (int)AdminLevel.HighGameMaster,
                 _ => (int)AdminLevel.Player
             },
-            Accounts_Username = playerConnection.CurrentPlayer?.Username ?? throw new InvalidOperationException("Cannot create a character without a user"),
+            Accounts_Username = playerConnection.Account?.Username ?? throw new InvalidOperationException("Cannot create a character without a user"),
             Map = 1,
             X = 1,
             Y = 1,
@@ -62,15 +62,15 @@ internal class CharacterCreateClientPacketHandler : IPacketHandler<CharacterCrea
         };
 
         await _repository.CreateAsync(character);
-        _logger.LogInformation("Character '{Name}' created by '{Username}'.", character.Name, playerConnection.CurrentPlayer.Username);
-        playerConnection.CurrentPlayer.Characters.Add(character);
+        _logger.LogInformation("Character '{Name}' created by '{Username}'.", character.Name, playerConnection.Account.Username);
+        playerConnection.Account.Characters.Add(character);
 
         await playerConnection.Send(new CharacterReplyServerPacket
         {
             ReplyCode = CharacterReply.Ok,
             ReplyCodeData = new CharacterReplyServerPacket.ReplyCodeDataOk
             {
-                Characters = playerConnection.CurrentPlayer.Characters.Select((c, id) =>
+                Characters = playerConnection.Account.Characters.Select((c, id) =>
                 {
                     var entry = _mapper.Map<CharacterSelectionListEntry>(c);
                     entry.Id = id;

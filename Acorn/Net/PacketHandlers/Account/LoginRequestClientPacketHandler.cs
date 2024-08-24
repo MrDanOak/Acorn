@@ -10,25 +10,36 @@ namespace Acorn.Net.PacketHandlers.Account;
 public class LoginRequestClientPacketHandler(
     ILogger<LoginRequestClientPacketHandler> logger,
     IDbRepository<Data.Account> repository,
-    IMapper mapper
+    IMapper mapper,
+    WorldState world
 ) : IPacketHandler<LoginRequestClientPacket>
 {
     private readonly ILogger<LoginRequestClientPacketHandler> _logger = logger;
     private readonly IDbRepository<Data.Account> _repository = repository;
     private readonly IMapper _mapper = mapper;
+    private readonly WorldState _world = world;
 
     public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, LoginRequestClientPacket packet)
     {
         var responsePacket = (await _repository.GetByKey(packet.Username))
             .Match(success =>
             {
-                playerConnection.CurrentPlayer = success.Value;
+                if (_world.Players.Any(x => string.Equals(x.Account?.Username, success.Value.Username, StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    return new LoginReplyServerPacket
+                    {
+                        ReplyCode = LoginReply.LoggedIn,
+                        ReplyCodeData = new LoginReplyServerPacket.ReplyCodeDataLoggedIn { }
+                    };
+                }
+
+                playerConnection.Account = success.Value;
                 return new LoginReplyServerPacket
                 {
                     ReplyCode = LoginReply.Ok,
                     ReplyCodeData = new LoginReplyServerPacket.ReplyCodeDataOk()
                     {
-                        Characters = playerConnection.CurrentPlayer.Characters.Select((x, id) =>
+                        Characters = playerConnection.Account.Characters.Select((x, id) =>
                         {
                             var entry = _mapper.Map<CharacterSelectionListEntry>(x);
                             entry.Id = id;

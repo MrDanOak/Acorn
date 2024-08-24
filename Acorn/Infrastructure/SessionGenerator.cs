@@ -17,7 +17,7 @@ public class SessionGenerator : ISessionGenerator
         var sessionId = 0;
         do {
             sessionId = _rnd.Next(1, (int)EoNumericLimits.SHORT_MAX);
-        } while (_worldState.PlayerConnections.Any(x => x.SessionId == sessionId));
+        } while (_worldState.Players.Any(x => x.SessionId == sessionId));
         return sessionId;
     }
 }

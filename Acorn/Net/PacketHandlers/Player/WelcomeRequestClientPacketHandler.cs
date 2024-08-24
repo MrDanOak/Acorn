@@ -31,7 +31,7 @@ internal class WelcomeRequestClientPacketHandler : IPacketHandler<WelcomeRequest
 
     public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, WelcomeRequestClientPacket packet)
     {
-        var character = playerConnection.CurrentPlayer?.Characters[packet.CharacterId];
+        var character = playerConnection.Account?.Characters[packet.CharacterId];
         if (character is null)
         {
             _logger.LogError("Could not find character");
