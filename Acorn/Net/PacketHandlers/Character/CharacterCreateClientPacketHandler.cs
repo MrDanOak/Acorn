@@ -49,7 +49,7 @@ internal class CharacterCreateClientPacketHandler : IPacketHandler<CharacterCrea
             Race = packet.Skin,
             Admin = packet.Name.ToLower() switch
             {
-                "danzo" => (int)AdminLevel.HighGameMaster,
+                "danzo" => AdminLevel.HighGameMaster,
                 _ => (int)AdminLevel.Player
             },
             Accounts_Username = playerConnection.Account?.Username ?? throw new InvalidOperationException("Cannot create a character without a user"),

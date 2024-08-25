@@ -1,6 +1,8 @@
 ﻿using Acorn.Data.Repository;
 using Acorn.Net;
+using Acorn.Net.PacketHandlers.Player.Warp;
 using Moffat.EndlessOnline.SDK.Protocol.Map;
+using Moffat.EndlessOnline.SDK.Protocol.Net;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
 using Moffat.EndlessOnline.SDK.Protocol.Pub;
 using System.Collections.Concurrent;
@@ -21,16 +23,32 @@ public class WorldState
         }
     }
 
-    public async Task Tick()
-    {
-        foreach (var map in Maps)
-        {
-            map.Tick();
-        }
-    }
-
     public MapState MapFor(PlayerConnection player) 
         => Maps.Single(x => x.HasPlayer(player));
+
+    public Task Refresh(PlayerConnection player) => Warp(player, player.Character.Map, player.Character.X, player.Character.Y);
+
+    public async Task Warp(PlayerConnection player, int mapId, int x, int y)
+    {
+        var currentMap = MapFor(player);
+        var newMap = Maps.Single(x => x.Id == mapId);
+        await currentMap.Leave(player);
+
+        player.WarpSession = new WarpSession() { WarpEffect = WarpEffect.None, Local = true, MapId = mapId, X = x, Y = y };
+
+        await newMap.Enter(player);
+        await player.Send(new WarpRequestServerPacket
+        {
+            MapId = mapId,
+            SessionId = player.SessionId,
+            WarpType = WarpType.Local,
+            WarpTypeData = new WarpRequestServerPacket.WarpTypeDataMapSwitch
+            {
+                MapFileSize = newMap.Data.ByteSize,
+                MapRid = newMap.Data.Rid
+            }
+        });
+    }
 }
 
 public class MapState
@@ -52,39 +70,53 @@ public class MapState
         return Players.Contains(player);
     }
 
-    public void Enter(PlayerConnection player)
+    public IEnumerable<PlayerConnection> PlayersExcept(PlayerConnection playerConnection) => 
+        Players.Where(x => x != playerConnection);
+
+    public async Task BroadcastPacket(IPacket packet, PlayerConnection? except = null)
     {
-        Players.Add(player);
-        Players.Where(x => x != player)
+        var broadcast = Players.Where(x => except is null || x == except)
             .ToList()
-            .ForEach(async otherPlayer =>
-                await otherPlayer.Send(new PlayersAgreeServerPacket
-                {
-                    Nearby = new NearbyInfo
-                    {
-                        Characters = Players.Where(x => x != otherPlayer).Select(x => x.Character.AsCharacterMapInfo(x.SessionId)).ToList(),
-                        Items = [],
-                        Npcs = []
-                    }
-                })
-            );
+            .Select(async otherPlayer => await otherPlayer.Send(packet));
+
+        await Task.WhenAll(broadcast);
     }
 
-    public void Leave(PlayerConnection player)
+    public NearbyInfo AsNearbyInfo(PlayerConnection? except = null, WarpEffect warpEffect = WarpEffect.None) => new ()
+    {
+        Characters = Players
+            .Where(x => x.Character is not null)
+            .Where(x => except == null || x != except)
+            .Select(x => x.Character.AsCharacterMapInfo(x.SessionId, warpEffect))
+            .ToList(),
+        Items = [],
+        Npcs = []
+    };
+
+    public async Task Enter(PlayerConnection player, WarpEffect warpEffect = WarpEffect.None)
+    {
+        player.Character.Map = Id;
+
+        Players.Add(player);
+        await BroadcastPacket(new PlayersAgreeServerPacket
+        {
+            Nearby = AsNearbyInfo(player, warpEffect)
+        }, player);
+    }
+
+    public async Task Leave(PlayerConnection player, WarpEffect warpEffect = WarpEffect.None)
     {
         Players = new ConcurrentBag<PlayerConnection>(Players.Where(p => p != player));
-        Players.ToList().ForEach(async otherPlayer =>
+        
+        await BroadcastPacket(new PlayersRemoveServerPacket
         {
-            await otherPlayer.Send(new PlayersRemoveServerPacket
-            {
-                PlayerId = player.SessionId,
-            });
+            PlayerId = player.SessionId,
+        });
 
-            await otherPlayer.Send(new AvatarRemoveServerPacket
-            {
-                PlayerId = player.SessionId,
-                WarpEffect = WarpEffect.Admin
-            });
+        await BroadcastPacket(new AvatarRemoveServerPacket
+        {
+            PlayerId = player.SessionId,
+            WarpEffect = warpEffect
         });
     }
 

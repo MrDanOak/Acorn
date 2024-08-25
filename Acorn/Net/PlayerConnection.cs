@@ -3,6 +3,7 @@ using Acorn.Infrastructure;
 using Acorn.Infrastructure.Extensions;
 using Acorn.Net.Models;
 using Acorn.Net.PacketHandlers;
+using Acorn.Net.PacketHandlers.Player.Warp;
 using Microsoft.Extensions.Logging;
 using Moffat.EndlessOnline.SDK.Data;
 using Moffat.EndlessOnline.SDK.Packet;
@@ -30,8 +31,11 @@ public class PlayerConnection : IDisposable
     public InitSequenceStart StartSequence { get; set; }
     public TcpClient TcpClient { get; }
     public Account? Account { get; set; }
-    public int SessionId { get; internal set; }
-    public Character Character { get; internal set; }
+
+    public int SessionId { get; set; }
+    public WarpSession? WarpSession { get; set; }
+
+    public Character Character { get; set; }
 
     public PlayerConnection(
         IServiceProvider services,

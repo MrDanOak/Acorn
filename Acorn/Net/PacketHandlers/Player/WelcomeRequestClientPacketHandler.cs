@@ -38,7 +38,7 @@ internal class WelcomeRequestClientPacketHandler : IPacketHandler<WelcomeRequest
             return new Error();
         }
 
-        playerConnection.SessionId = _sessionGenerator.Generate();
+        //playerConnection.SessionId = _sessionGenerator.Generate();
         var map = _dataRepository.Maps.FirstOrDefault(map => map.Id == character.Map)?.Map;
         if (map is null)
         {
@@ -61,7 +61,7 @@ internal class WelcomeRequestClientPacketHandler : IPacketHandler<WelcomeRequest
             WelcomeCode = WelcomeCode.SelectCharacter,
             WelcomeCodeData = new WelcomeReplyServerPacket.WelcomeCodeDataSelectCharacter
             {
-                Admin = (AdminLevel)character.Admin,
+                Admin = character.Admin,
                 CharacterId = packet.CharacterId,
                 ClassId = character.Class,
                 EcfLength = _dataRepository.Ecf.ByteSize,

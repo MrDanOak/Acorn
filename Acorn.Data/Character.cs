@@ -17,7 +17,7 @@ public class Character
     public string? Home { get; set; }
     public string? Fiance { get; set; }
     public string? Partner { get; set; }
-    public int Admin { get; set; }
+    public AdminLevel Admin { get; set; }
     public int Class { get; set; }
     public Gender Gender { get; set; }
     public int Race { get; set; }
@@ -40,6 +40,9 @@ public class Character
     public int Agi { get; set; }
     public int Con { get; set; }
     public int Cha { get; set; }
+    public int MinDamage { get; set; }
+    public int MaxDamage { get; set; }
+    public int MaxWeight { get; set; }
     public int StatPoints { get; set; }
     public int SkillPoints { get; set; }
     public int Karma { get; set; }
@@ -62,8 +65,13 @@ public class Character
             success =>
             {
                 var @class = success.Value;
+
                 MaxHp = 100;
-                Hp = 100;
+                MaxTp = 100;
+                MaxSp = 100;
+                MinDamage = 100;
+                MaxDamage = 150;
+                MaxWeight = 100;
 
                 Hp = Hp > MaxHp ? MaxHp : Hp;
                 Str = @class.Str + Str;
@@ -71,12 +79,6 @@ public class Character
                 Agi = @class.Agi + Agi;
                 Con = @class.Con + Con;
                 Cha = @class.Cha + Cha;
-
-                MaxTp = 100;
-                Tp = 100;
-
-                MaxSp = 100;
-                Sp = 100;
             },
             error =>
             {
@@ -85,13 +87,13 @@ public class Character
         );
     }
 
-    public CharacterMapInfo AsCharacterMapInfo(int playerId) => new()
+    public CharacterMapInfo AsCharacterMapInfo(int playerId, WarpEffect wapEffect) => new()
     {
         ClassId = Class,
         Direction = Direction,
         Coords = new BigCoords { X = X, Y = Y },
         Equipment = new EquipmentMapInfo(),
-        WarpEffect = WarpEffect.Admin,
+        WarpEffect = wapEffect,
         Gender = Gender,
         GuildTag = "   ",//todo: guilds
         HairColor = HairColor,
@@ -113,7 +115,7 @@ public class Character
     {
         ClassId = Class,
         GuildTag = "   ", //todo: guilds
-        Icon = Admin switch
+        Icon = (int)Admin switch
         {
             0 => CharacterIcon.Player,
             1 or 2 or 3 => CharacterIcon.Gm,
@@ -124,6 +126,37 @@ public class Character
         Name = Name,
         Title = Title ?? ""
     };
+
+    public CharacterStatsUpdate AsStatsUpdate() 
+        => new()
+        {
+            MaxHp = MaxHp,
+            MaxTp = MaxTp,
+            MaxSp = MaxSp,
+            BaseStats = AsBaseStats(),
+            SecondaryStats = AsSecondaryStats(),
+            MaxWeight = MaxWeight
+        };
+
+    public CharacterBaseStats AsBaseStats()
+        => new()
+        {
+            Agi = Agi,
+            Cha = Cha,
+            Con = Con,
+            Str = Str,
+            Wis = Wis
+        };
+
+    public CharacterSecondaryStats AsSecondaryStats()
+        => new()
+        {
+            Accuracy = 0,
+            Armor = 0,
+            Evade = 0,
+            MinDamage = MinDamage,
+            MaxDamage = MaxDamage
+        };
 
     public OneOf<Success<IEnumerable<Item>>, Error<string>> Items()
     {

@@ -21,7 +21,7 @@ public class ConnectionAcceptClientPacketHandler(
             return new Error();
         }
 
-        playerConnection.SessionId = _sessionGenerator.Generate();
+        //playerConnection.SessionId = _sessionGenerator.Generate();
         _logger.LogDebug("Got expected connection accept packet from {Location} for player id {PlayerId}", playerConnection.TcpClient.Client.RemoteEndPoint, playerConnection.SessionId);
         return new Success();
     }

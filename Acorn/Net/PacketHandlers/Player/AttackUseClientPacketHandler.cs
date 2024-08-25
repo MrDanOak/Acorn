@@ -2,22 +2,23 @@
 using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
 using OneOf;
 using OneOf.Types;
-using System.Diagnostics;
 
 namespace Acorn.Net.PacketHandlers.Player;
 internal class AttackUseClientPacketHandler : IPacketHandler<AttackUseClientPacket>
 {
-    private WorldState _world;
+    private readonly WorldState _world;
+    private readonly UtcNowDelegate _now;
     private DateTime _timeSinceLastAttack;
 
-    public AttackUseClientPacketHandler(WorldState world)
+    public AttackUseClientPacketHandler(WorldState world, UtcNowDelegate now)
     {
         _world = world;
+        _now = now;
     }
 
     public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, AttackUseClientPacket packet)
     {
-        if ((DateTime.UtcNow - _timeSinceLastAttack).TotalMilliseconds < 500)
+        if ((_now() - _timeSinceLastAttack).TotalMilliseconds < 500)
         {
             return new Success();
         }

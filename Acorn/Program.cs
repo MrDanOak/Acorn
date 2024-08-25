@@ -3,6 +3,7 @@ using Acorn.Data;
 using Acorn.Data.Repository;
 using Acorn.Infrastructure;
 using Acorn.Net.PacketHandlers;
+using Acorn.Net.PacketHandlers.Player.Talk;
 using Acorn.Services;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
@@ -60,7 +61,8 @@ await Host.CreateDefaultBuilder(args)
             .AddHostedService<NewConnectionHostedService>()
             .AddHostedService<WorldHostedService>()
             .AddSingleton<WorldState>()
-            .AddPacketHandlers()
+            .AddAllOfType(typeof(IPacketHandler<>))
+            .AddAllOfType<ITalkHandler>()
             .AddRepositories();
     })
     .ConfigureLogging(builder =>
@@ -76,24 +78,26 @@ await Host.CreateDefaultBuilder(args)
 
 static class IocRegistrations
 {
-    public static IServiceCollection AddPacketHandlers(this IServiceCollection services)
+    public static IServiceCollection AddAllOfType(this IServiceCollection services, Type type)
     {
         var assembly = Assembly.GetExecutingAssembly();
-        var packetHandlerType = typeof(IPacketHandler<>);
 
         var handlers = assembly.GetTypes()
-            .Where(t => t.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == packetHandlerType))
+            .Where(t => (!type.IsGenericType && t.GetInterfaces().Any(x => x == type)) || t.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == type))
             .ToList();
 
         foreach (var handler in handlers)
         {
             var interfaceType = handler.GetInterfaces()
-                .First(i => i.IsGenericType && i.GetGenericTypeDefinition() == packetHandlerType);
+                .First(i => !i.IsGenericType || (i.IsGenericType && i.GetGenericTypeDefinition() == type));
             services.AddTransient(interfaceType, handler);
         }
 
         return services;
     }
+
+    public static IServiceCollection AddAllOfType<T>(this IServiceCollection services)
+        => services.AddAllOfType(typeof(T));
 
     public static IServiceCollection AddRepositories(this IServiceCollection services)
     => services
