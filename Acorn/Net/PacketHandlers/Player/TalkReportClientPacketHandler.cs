@@ -1,4 +1,5 @@
 ﻿using Acorn.Net.PacketHandlers.Player.Talk;
+using Moffat.EndlessOnline.SDK.Protocol;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Client;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
 using OneOf;
@@ -21,7 +22,7 @@ internal class TalkReportClientPacketHandler : IPacketHandler<TalkReportClientPa
         var map = _world.MapFor(playerConnection);
         var author = playerConnection.Character;
 
-        if (packet.Message.StartsWith("$"))
+        if (author.Admin > AdminLevel.Player && packet.Message.StartsWith("$"))
         {
             var args = packet.Message.Split(" ");
             var command = args[0][1..];

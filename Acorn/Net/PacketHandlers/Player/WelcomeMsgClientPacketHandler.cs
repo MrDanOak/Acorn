@@ -28,7 +28,7 @@ internal class WelcomeMsgClientPacketHandler : IPacketHandler<WelcomeMsgClientPa
         playerConnection.ClientState = ClientState.InGame;
         var map = _world.Maps.First(x => x.Id == playerConnection.Character.Map);
 
-        map.Enter(playerConnection);
+        await map.Enter(playerConnection);
 
         await playerConnection.Send(new WelcomeReplyServerPacket()
         {

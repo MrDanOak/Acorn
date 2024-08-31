@@ -39,7 +39,7 @@ internal class WalkPlayerClientPacketHandler : IPacketHandler<WalkPlayerClientPa
         var otherPlayers = map.Players
             .Where(x => x.Character.Map == map.Id).Where(x => x != playerConnection).ToList();
 
-        otherPlayers.ForEach(async otherPlayer =>
+        var otherPlayerTasks = otherPlayers.Select(async otherPlayer =>
         {
             await otherPlayer.Send(new WalkPlayerServerPacket
             {
@@ -52,6 +52,8 @@ internal class WalkPlayerClientPacketHandler : IPacketHandler<WalkPlayerClientPa
                 }
             });
         });
+
+        await Task.WhenAll(otherPlayerTasks);
 
         return new Success();
     }

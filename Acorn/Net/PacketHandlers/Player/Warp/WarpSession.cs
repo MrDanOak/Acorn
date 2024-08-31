@@ -8,4 +8,33 @@ public class WarpSession
     public int MapId { get; set; }
     public int X { get; set; }
     public int Y { get; set; }
+
+    public async Task Begin(PlayerConnection player, WorldState worldState)
+    {
+        if (Local)
+        {
+            await player.Send(new WarpRequestServerPacket
+            {
+                WarpType = WarpType.Local,
+                MapId = MapId,
+                SessionId = player.SessionId,
+                WarpTypeData = null
+            });
+            return;
+        }
+
+        var map = worldState.Maps.Single(x => x.Id == MapId);
+
+        await player.Send(new WarpRequestServerPacket
+        {
+            WarpType = WarpType.MapSwitch,
+            MapId = MapId,
+            SessionId = player.SessionId,
+            WarpTypeData = new WarpRequestServerPacket.WarpTypeDataMapSwitch
+            {
+                MapFileSize = map.Data.ByteSize,
+                MapRid = map.Data.Rid
+            }
+        });
+    }
 }

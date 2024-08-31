@@ -49,9 +49,9 @@ public class SetCommandHandler : ITalkHandler
             return;
         }
 
-        Action adjustment = args[1] switch
+        Action adjustment = args[1].ToLower() switch
         {
-            "Admin" => () => target.Character.Admin = (AdminLevel)value,
+            "admin" => () => target.Character.Admin = (AdminLevel)value,
             "class" => () => target.Character.Class = value,
             "gender" => () => target.Character.Gender = (Gender)value,
             "level" => () => target.Character.Level = value,

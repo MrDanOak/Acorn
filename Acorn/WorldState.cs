@@ -1,6 +1,5 @@
 ﻿using Acorn.Data.Repository;
 using Acorn.Net;
-using Acorn.Net.PacketHandlers.Player.Warp;
 using Moffat.EndlessOnline.SDK.Protocol.Map;
 using Moffat.EndlessOnline.SDK.Protocol.Net;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
@@ -23,31 +22,31 @@ public class WorldState
         }
     }
 
-    public MapState MapFor(PlayerConnection player) 
+    public MapState MapFor(PlayerConnection player)
         => Maps.Single(x => x.HasPlayer(player));
 
     public Task Refresh(PlayerConnection player) => Warp(player, player.Character.Map, player.Character.X, player.Character.Y);
 
-    public async Task Warp(PlayerConnection player, int mapId, int x, int y)
+    public async Task Warp(PlayerConnection player, int mapId, int x, int y, WarpEffect warpEffect = WarpEffect.None, bool localWarp = true)
     {
-        var currentMap = MapFor(player);
-        var newMap = Maps.Single(x => x.Id == mapId);
-        await currentMap.Leave(player);
-
-        player.WarpSession = new WarpSession() { WarpEffect = WarpEffect.None, Local = true, MapId = mapId, X = x, Y = y };
-
-        await newMap.Enter(player);
-        await player.Send(new WarpRequestServerPacket
+        player.WarpSession = new()
         {
+            WarpEffect = warpEffect,
+            Local = localWarp,
             MapId = mapId,
-            SessionId = player.SessionId,
-            WarpType = WarpType.Local,
-            WarpTypeData = new WarpRequestServerPacket.WarpTypeDataMapSwitch
-            {
-                MapFileSize = newMap.Data.ByteSize,
-                MapRid = newMap.Data.Rid
-            }
-        });
+            X = x,
+            Y = y
+        };
+
+        await player.WarpSession.Begin(player, this);
+
+        if (!localWarp)
+        {
+            var currentMap = MapFor(player);
+            var newMap = Maps.Single(x => x.Id == mapId);
+            await currentMap.Leave(player, warpEffect);
+            await newMap.Enter(player, warpEffect);
+        }
     }
 }
 
@@ -70,19 +69,21 @@ public class MapState
         return Players.Contains(player);
     }
 
-    public IEnumerable<PlayerConnection> PlayersExcept(PlayerConnection playerConnection) => 
+    public IEnumerable<PlayerConnection> PlayersExcept(PlayerConnection playerConnection) =>
         Players.Where(x => x != playerConnection);
 
     public async Task BroadcastPacket(IPacket packet, PlayerConnection? except = null)
     {
-        var broadcast = Players.Where(x => except is null || x == except)
-            .ToList()
+        var otherPlayers = Players.Where(x => except is null || x != except)
+            .ToList();
+
+        var broadcast = otherPlayers
             .Select(async otherPlayer => await otherPlayer.Send(packet));
 
         await Task.WhenAll(broadcast);
     }
 
-    public NearbyInfo AsNearbyInfo(PlayerConnection? except = null, WarpEffect warpEffect = WarpEffect.None) => new ()
+    public NearbyInfo AsNearbyInfo(PlayerConnection? except = null, WarpEffect warpEffect = WarpEffect.None) => new()
     {
         Characters = Players
             .Where(x => x.Character is not null)
@@ -97,17 +98,19 @@ public class MapState
     {
         player.Character.Map = Id;
 
-        Players.Add(player);
+        if (!Players.Contains(player))
+            Players.Add(player);
+
         await BroadcastPacket(new PlayersAgreeServerPacket
         {
-            Nearby = AsNearbyInfo(player, warpEffect)
-        }, player);
+            Nearby = AsNearbyInfo(null, warpEffect)
+        }, except: player);
     }
 
     public async Task Leave(PlayerConnection player, WarpEffect warpEffect = WarpEffect.None)
     {
         Players = new ConcurrentBag<PlayerConnection>(Players.Where(p => p != player));
-        
+
         await BroadcastPacket(new PlayersRemoveServerPacket
         {
             PlayerId = player.SessionId,

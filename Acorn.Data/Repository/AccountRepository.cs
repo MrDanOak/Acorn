@@ -10,6 +10,7 @@ public class AccountRepository : BaseDbRepository, IDbRepository<Account>, IDisp
 {
     private readonly IDbConnection _conn;
     private readonly ILogger<AccountRepository> _logger;
+
     public static class SQLStatements
     {
         public static string Create = "";
