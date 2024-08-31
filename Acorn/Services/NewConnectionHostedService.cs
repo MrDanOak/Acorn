@@ -47,7 +47,7 @@ public class NewConnectionHostedService(
                 if (playerConnection.Character is not null)
                 {
                     var map = _world.Maps.First(x => x.Id == playerConnection.Character.Map);
-                    map.Leave(playerConnection);
+                    await map.Leave(playerConnection);
                     await _characterRepository.UpdateAsync(playerConnection.Character);
                 }
 

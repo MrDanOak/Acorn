@@ -13,6 +13,7 @@ public class WorldState
 {
     public ConcurrentBag<PlayerConnection> Players = [];
     public ConcurrentBag<MapState> Maps = [];
+    public ConcurrentBag<GlobalMessage> GlobalMessages = [];
 
     public WorldState(IDataFileRepository dataRepository)
     {
@@ -48,6 +49,22 @@ public class WorldState
             await newMap.Enter(player, warpEffect);
         }
     }
+}
+
+public record GlobalMessage(
+    Guid Id, 
+    string Message,
+    string Author,
+    DateTime CreatedAt
+)
+{
+    public static GlobalMessage Welcome() => 
+        new(
+            Guid.NewGuid(), 
+            "Welcome to Acorn! Please be respectful.", 
+            "Server", 
+            DateTime.UtcNow
+        );
 }
 
 public class MapState

@@ -31,6 +31,7 @@ public class PlayerConnection : IDisposable
     public InitSequenceStart StartSequence { get; set; }
     public TcpClient TcpClient { get; }
     public Account? Account { get; set; }
+    public bool IsListeningToGlobal { get; set; }
 
     public int SessionId { get; set; }
     public WarpSession? WarpSession { get; set; }
@@ -151,7 +152,7 @@ public class PlayerConnection : IDisposable
         byte[] bytes = packet switch
         {
             InitInitServerPacket _ => writer.ToByteArray(),
-            _ => DataEncrypter.FlipMSB(DataEncrypter.Interleave(DataEncrypter.SwapMultiples(writer.ToByteArray(), ClientEncryptionMulti)))
+            _ => DataEncrypter.FlipMSB(DataEncrypter.Interleave(DataEncrypter.SwapMultiples(writer.ToByteArray(), ServerEncryptionMulti)))
         };
 
         var encodedLength = NumberEncoder.EncodeNumber(bytes.Length);
