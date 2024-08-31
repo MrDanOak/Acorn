@@ -15,8 +15,6 @@
 ## Prerequisites
 
 - [.NET SDK](https://dotnet.microsoft.com/download)
-- [SQLite](https://www.sqlite.org/download.html)
-- [Docker](https://www.docker.com/get-started) (for MSSQL support)
 
 ## Building the Project
 
@@ -58,4 +56,8 @@ This project is licensed under the MIT License. See the LICENSE file for details
 
 ## Acknowledgements
 
-- **EthanMoffat & Cirras** for `eolib-dotnet` and `eo-protocol`
+- **EthanMoffat:** `eolib-dotnet` and `EndlessClient`
+- **Cirras:** `eo-protocol`
+- **Sorokya:** `reoserv`
+- **Sausage:** `EOSERV`
+- **Vult-r:** Original software
