@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using Acorn.Data.Models;
+using Dapper;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OneOf;

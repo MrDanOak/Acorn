@@ -1,5 +1,4 @@
-﻿using Acorn.Data;
-using Acorn.Data.Repository;
+﻿using Acorn.Data.Repository;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Moffat.EndlessOnline.SDK.Protocol;
@@ -11,12 +10,12 @@ using OneOf.Types;
 namespace Acorn.Net.PacketHandlers.Character;
 internal class CharacterCreateClientPacketHandler : IPacketHandler<CharacterCreateClientPacket>
 {
-    private readonly IDbRepository<Data.Character> _repository;
+    private readonly IDbRepository<Data.Models.Character> _repository;
     private readonly ILogger<CharacterCreateClientPacketHandler> _logger;
     private readonly IMapper _mapper;
 
     public CharacterCreateClientPacketHandler(
-        IDbRepository<Data.Character> repository,
+        IDbRepository<Data.Models.Character> repository,
         ILogger<CharacterCreateClientPacketHandler> logger,
         IMapper mapper
     )
@@ -43,7 +42,7 @@ internal class CharacterCreateClientPacketHandler : IPacketHandler<CharacterCrea
             return new Success();
         }
 
-        var character = new Data.Character()
+        var character = new Data.Models.Character
         {
             Name = packet.Name,
             Race = packet.Skin,

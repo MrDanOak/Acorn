@@ -1,4 +1,4 @@
-﻿using Acorn.Data;
+﻿using Acorn.Data.Models;
 using Acorn.Data.Repository;
 using Acorn.Infrastructure;
 using Acorn.Net;

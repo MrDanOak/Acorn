@@ -1,5 +1,6 @@
 ﻿using Acorn.Data.Repository;
 using Acorn.Net;
+using Moffat.EndlessOnline.SDK.Protocol;
 using Moffat.EndlessOnline.SDK.Protocol.Map;
 using Moffat.EndlessOnline.SDK.Protocol.Net;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
@@ -108,8 +109,10 @@ public class MapState
             .Select(x => x.Character.AsCharacterMapInfo(x.SessionId, warpEffect))
             .ToList(),
         Items = [],
-        Npcs = []
+        Npcs = AsNpcMapInfo()
     };
+
+    public List<NpcMapInfo> AsNpcMapInfo() => Npcs.Select((x, i) => x.AsNpcMapInfo(i)).ToList();
 
     public async Task Enter(PlayerConnection player, WarpEffect warpEffect = WarpEffect.None)
     {
@@ -153,8 +156,19 @@ public class MapState
 public class NpcState
 {
     public EnfRecord Data { get; set; }
+    public Direction Direction { get; set; }
+    public int X { get; set; }
+    public int Y { get; set; }
+    public int Id { get; set; }
 
-    public int Hp { get; set; }
+    public NpcMapInfo AsNpcMapInfo(int index)
+        => new()
+        {
+            Coords = new() { X = X, Y = Y },
+            Direction = Direction,
+            Id = Id,
+            Index = index
+        };
 
     public NpcState(EnfRecord data)
     {

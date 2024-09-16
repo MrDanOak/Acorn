@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using Acorn.Data.Models;
+using Dapper;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OneOf;
@@ -67,12 +68,23 @@ public class CharacterRepository : BaseDbRepository, IDbRepository<Character>, I
     {
         try
         {
-            var character = await _conn.QuerySingleOrDefaultAsync<Character>(SQLStatements.GetByKey, new { name });
-            if (character is null)
+            var character = await _conn.QueryAsync<Character, ItemWithAmount, Character>(
+                SQLStatements.GetByKey,
+                (character, item) =>
+                {
+                    if (item != null && character.Inventory.Items.All(x => x.Id != item.Id))
+                        character.Inventory.Items.Add(item);
+
+                    return character;
+                },
+                new { name });
+
+            if (character is null || !character.Any())
             {
                 return new NotFound();
             }
-            return new Success<Character>(character);
+
+            return new Success<Character>(character.Single());
         }
         catch (Exception e)
         {

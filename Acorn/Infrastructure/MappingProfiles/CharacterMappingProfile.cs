@@ -1,4 +1,4 @@
-﻿using Acorn.Data;
+﻿using Acorn.Data.Models;
 using AutoMapper;
 using Moffat.EndlessOnline.SDK.Protocol;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Server;

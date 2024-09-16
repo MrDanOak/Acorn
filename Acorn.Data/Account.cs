@@ -1,4 +1,6 @@
-﻿namespace Acorn.Data;
+﻿using Acorn.Data.Models;
+
+namespace Acorn.Data;
 public class Account
 {
     public string Username { get; set; }

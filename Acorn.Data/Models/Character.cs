@@ -7,7 +7,7 @@ using OneOf;
 using OneOf.Types;
 using System.Collections.Concurrent;
 
-namespace Acorn.Data;
+namespace Acorn.Data.Models;
 
 public class Character
 {
@@ -52,9 +52,10 @@ public class Character
     public int BankMax { get; set; }
     public int GoldBank { get; set; }
     public int Usage { get; set; }
-    public Inventory Inventory { get; set; } = new Inventory([]);
-    public Bank Bank { get; set; } = new Bank([]);
-    public Paperdoll Paperdoll { get; set; } = new Paperdoll(0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    public Inventory Inventory { get; set; } = new([]);
+    public Bank Bank { get; set; } = new([]);
+    public Paperdoll Paperdoll { get; set; } = new();
+
     //TODO: Add spells
     //TODO: Add guilds
     //TODO: Add quests
@@ -127,7 +128,7 @@ public class Character
         Title = Title ?? ""
     };
 
-    public CharacterStatsUpdate AsStatsUpdate() 
+    public CharacterStatsUpdate AsStatsUpdate()
         => new()
         {
             MaxHp = MaxHp,
@@ -198,26 +199,6 @@ public class Character
     }
 }
 
-public record Paperdoll(
-    int Hat,
-    int Necklace,
-    int Armor,
-    int Belt,
-    int Boots,
-    int Gloves,
-    int Weapon,
-    int Shield,
-    int Accessory,
-    int Ring1,
-    int Ring2,
-    int Bracer1,
-    int Bracer2,
-    int Armlet1,
-    int Armlet2
-);
-
 public record Bank(ConcurrentBag<ItemWithAmount> Items);
 
 public record Inventory(ConcurrentBag<ItemWithAmount> Items);
-
-public record ItemWithAmount(int Id, int Amount);

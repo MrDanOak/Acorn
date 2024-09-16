@@ -18,6 +18,10 @@ public class DbInitialiser : IDbInitialiser
             return;
         }
 
+        if (File.Exists("Acorn.db"))
+        {
+            return;
+        }
         var sqliteConnection = new SqliteConnection(_options.ConnectionString);
         sqliteConnection.Open();
         using var command = sqliteConnection.CreateCommand();
