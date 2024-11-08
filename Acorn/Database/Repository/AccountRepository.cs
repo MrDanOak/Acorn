@@ -1,4 +1,5 @@
 ﻿using Acorn.Data.Models;
+using Acorn.Database.Models;
 using Dapper;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -32,12 +33,12 @@ public class AccountRepository : BaseDbRepository, IDbRepository<Account>, IDisp
         _conn = conn;
         _logger = logger;
 
-        SQLStatements.Create = File.ReadAllText($"Database/{options.Value.Engine}/Account/Create.sql");
-        SQLStatements.Update = File.ReadAllText($"Database/{options.Value.Engine}/Account/Update.sql");
-        SQLStatements.GetByKey = File.ReadAllText($"Database/{options.Value.Engine}/Account/GetByKey.sql");
-        SQLStatements.Delete = File.ReadAllText($"Database/{options.Value.Engine}/Account/Delete.sql");
-        SQLStatements.GetCharacters = File.ReadAllText($"Database/{options.Value.Engine}/Account/GetCharacters.sql");
-        SQLStatements.GetAll = File.ReadAllText($"Database/{options.Value.Engine}/Account/GetAll.sql");
+        SQLStatements.Create = File.ReadAllText($"Database/Scripts/{options.Value.Engine}/Account/Create.sql");
+        SQLStatements.Update = File.ReadAllText($"Database/Scripts/{options.Value.Engine}/Account/Update.sql");
+        SQLStatements.GetByKey = File.ReadAllText($"Database/Scripts/{options.Value.Engine}/Account/GetByKey.sql");
+        SQLStatements.Delete = File.ReadAllText($"Database/Scripts/{options.Value.Engine}/Account/Delete.sql");
+        SQLStatements.GetCharacters = File.ReadAllText($"Database/Scripts/{options.Value.Engine}/Account/GetCharacters.sql");
+        SQLStatements.GetAll = File.ReadAllText($"Database/Scripts/{options.Value.Engine}/Account/GetAll.sql");
 
         if (_conn.State != ConnectionState.Open)
         {

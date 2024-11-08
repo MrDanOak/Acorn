@@ -1,5 +1,6 @@
 ﻿using Acorn.Data;
 using Acorn.Data.Repository;
+using Acorn.Database.Models;
 using Microsoft.Extensions.Logging;
 
 namespace Acorn.Infrastructure;

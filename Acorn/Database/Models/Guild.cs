@@ -1,4 +1,4 @@
-﻿namespace Acorn.Data;
+﻿namespace Acorn.Database.Models;
 
 public class Guild
 {

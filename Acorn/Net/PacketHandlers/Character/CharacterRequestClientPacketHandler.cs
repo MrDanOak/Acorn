@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Moffat.EndlessOnline.SDK.Protocol.Net.Client;
+﻿using Moffat.EndlessOnline.SDK.Protocol.Net.Client;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
 using OneOf;
 using OneOf.Types;
@@ -7,13 +6,6 @@ using OneOf.Types;
 namespace Acorn.Net.PacketHandlers.Character;
 internal class CharacterRequestClientPacketHandler : IPacketHandler<CharacterRequestClientPacket>
 {
-    private readonly IMapper _mapper;
-
-    public CharacterRequestClientPacketHandler(IMapper mapper)
-    {
-        _mapper = mapper;
-    }
-
     public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, CharacterRequestClientPacket packet)
     {
         if (string.Equals(packet.RequestString, "new", StringComparison.OrdinalIgnoreCase) is false)

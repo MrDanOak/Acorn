@@ -30,9 +30,9 @@ public class CharacterRepository : BaseDbRepository, IDbRepository<Character>, I
         _conn = conn;
         _logger = logger;
 
-        SQLStatements.Create = File.ReadAllText($"Database/{options.Value.Engine}/Character/Create.sql");
-        SQLStatements.Update = File.ReadAllText($"Database/{options.Value.Engine}/Character/Update.sql");
-        SQLStatements.GetByKey = File.ReadAllText($"Database/{options.Value.Engine}/Character/GetByKey.sql");
+        SQLStatements.Create = File.ReadAllText($"Database/Scripts/{options.Value.Engine}/Character/Create.sql");
+        SQLStatements.Update = File.ReadAllText($"Database/Scripts/{options.Value.Engine}/Character/Update.sql");
+        SQLStatements.GetByKey = File.ReadAllText($"Database/Scripts/{options.Value.Engine}/Character/GetByKey.sql");
 
         if (_conn.State != ConnectionState.Open)
         {

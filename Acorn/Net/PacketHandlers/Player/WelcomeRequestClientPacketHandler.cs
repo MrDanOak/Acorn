@@ -1,6 +1,6 @@
 ﻿using Acorn.Data.Repository;
+using Acorn.Extensions;
 using Acorn.Infrastructure;
-using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Moffat.EndlessOnline.SDK.Protocol;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Client;
@@ -14,19 +14,16 @@ internal class WelcomeRequestClientPacketHandler : IPacketHandler<WelcomeRequest
     private readonly ISessionGenerator _sessionGenerator;
     private readonly IDataFileRepository _dataRepository;
     private readonly ILogger<WelcomeRequestClientPacketHandler> _logger;
-    private readonly IMapper _mapper;
 
     public WelcomeRequestClientPacketHandler(
         ISessionGenerator sessionGenerator,
         IDataFileRepository dataRepository,
-        ILogger<WelcomeRequestClientPacketHandler> logger,
-        IMapper mapper
+        ILogger<WelcomeRequestClientPacketHandler> logger
     )
     {
         _sessionGenerator = sessionGenerator;
         _dataRepository = dataRepository;
         _logger = logger;
-        _mapper = mapper;
     }
 
     public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, WelcomeRequestClientPacket packet)
@@ -70,7 +67,7 @@ internal class WelcomeRequestClientPacketHandler : IPacketHandler<WelcomeRequest
                 EifRid = _dataRepository.Eif.Rid,
                 EnfLength = _dataRepository.Enf.ByteSize,
                 EnfRid = _dataRepository.Enf.Rid,
-                Equipment = _mapper.Map<EquipmentWelcome>(equipmentResult.AsT0.Value),
+                Equipment = equipmentResult.AsT0.Value.AsEquipmentWelcome(),
                 EsfLength = _dataRepository.Esf.ByteSize,
                 EsfRid = _dataRepository.Esf.Rid,
                 Experience = character.Exp,

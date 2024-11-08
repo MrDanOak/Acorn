@@ -1,22 +1,19 @@
-﻿using AutoMapper;
-using Acorn.Data.Repository;
+﻿using Acorn.Data.Repository;
 using Microsoft.Extensions.Logging;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Client;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
 using OneOf;
 using OneOf.Types;
-using System.Text;
-using Acorn.Services.Security;
+using Acorn.Extensions;
 
 namespace Acorn.Net.PacketHandlers.Account;
 internal class AccountCreateClientPacketHandler(
-    IDbRepository<Data.Account> accountRepository,
-    IMapper mapper,
-    ILogger<AccountCreateClientPacketHandler> logger
+    IDbRepository<Database.Models.Account> accountRepository,
+    ILogger<AccountCreateClientPacketHandler> logger,
+    UtcNowDelegate nowDelegate
 ) : IPacketHandler<AccountCreateClientPacket>
 {
-    private readonly IDbRepository<Data.Account> _accountRepository = accountRepository;
-    private readonly IMapper _mapper = mapper;
+    private readonly IDbRepository<Database.Models.Account> _accountRepository = accountRepository;
     private readonly ILogger<AccountCreateClientPacketHandler> _logger = logger;
 
     public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, AccountCreateClientPacket packet)
@@ -37,10 +34,7 @@ internal class AccountCreateClientPacketHandler(
             return new Success();
         }
 
-        var account = _mapper.Map<Data.Account>(packet);
-        account.Password = Hash.HashPassword(packet.Username, packet.Password, out var salt);
-        account.Salt = Encoding.UTF8.GetString(salt);
-
+        var account = packet.AsNewAccount(nowDelegate());
         var result = await _accountRepository.CreateAsync(account);
 
         result.Switch(async success =>

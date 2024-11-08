@@ -1,5 +1,5 @@
 ﻿using Acorn.Data.Repository;
-using AutoMapper;
+using Acorn.Extensions;
 using Microsoft.Extensions.Logging;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Client;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
@@ -9,14 +9,12 @@ using OneOf.Types;
 namespace Acorn.Net.PacketHandlers.Account;
 public class LoginRequestClientPacketHandler(
     ILogger<LoginRequestClientPacketHandler> logger,
-    IDbRepository<Data.Account> repository,
-    IMapper mapper,
+    IDbRepository<Database.Models.Account> repository,
     WorldState world
 ) : IPacketHandler<LoginRequestClientPacket>
 {
     private readonly ILogger<LoginRequestClientPacketHandler> _logger = logger;
-    private readonly IDbRepository<Data.Account> _repository = repository;
-    private readonly IMapper _mapper = mapper;
+    private readonly IDbRepository<Database.Models.Account> _repository = repository;
     private readonly WorldState _world = world;
 
     public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, LoginRequestClientPacket packet)
@@ -39,12 +37,7 @@ public class LoginRequestClientPacketHandler(
                     ReplyCode = LoginReply.Ok,
                     ReplyCodeData = new LoginReplyServerPacket.ReplyCodeDataOk()
                     {
-                        Characters = playerConnection.Account.Characters.Select((x, id) =>
-                        {
-                            var entry = _mapper.Map<CharacterSelectionListEntry>(x);
-                            entry.Id = id;
-                            return entry;
-                        }).ToList()
+                        Characters = playerConnection.Account.Characters.Select((x, id) => x.AsCharacterListEntry(id)).ToList()
                     }
                 };
             },

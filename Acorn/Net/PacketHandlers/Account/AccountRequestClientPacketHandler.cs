@@ -9,11 +9,11 @@ using OneOf.Types;
 
 namespace Acorn.Net.PacketHandlers.Account;
 internal class AccountRequestClientPacketHandler(
-    IDbRepository<Data.Account> accountRepository,
+    IDbRepository<Database.Models.Account> accountRepository,
     ILogger<AccountRequestClientPacket> logger
 ) : IPacketHandler<AccountRequestClientPacket>
 {
-    private readonly IDbRepository<Data.Account> _accountRepository = accountRepository;
+    private readonly IDbRepository<Database.Models.Account> _accountRepository = accountRepository;
     private readonly ILogger<AccountRequestClientPacket> _logger = logger;
 
     public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, AccountRequestClientPacket packet)

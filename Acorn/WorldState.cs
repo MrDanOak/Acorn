@@ -1,4 +1,5 @@
 ﻿using Acorn.Data.Repository;
+using Acorn.Extensions;
 using Acorn.Net;
 using Moffat.EndlessOnline.SDK.Protocol;
 using Moffat.EndlessOnline.SDK.Protocol.Map;

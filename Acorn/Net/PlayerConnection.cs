@@ -1,5 +1,6 @@
 ﻿using Acorn.Data;
 using Acorn.Data.Models;
+using Acorn.Database.Models;
 using Acorn.Infrastructure;
 using Acorn.Infrastructure.Extensions;
 using Acorn.Net.Models;

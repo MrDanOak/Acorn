@@ -2,6 +2,7 @@
 using Acorn.Data;
 using Acorn.Data.Models;
 using Acorn.Data.Repository;
+using Acorn.Database.Models;
 using Acorn.Infrastructure;
 using Acorn.Net.PacketHandlers;
 using Acorn.Net.PacketHandlers.Player.Talk;
@@ -43,7 +44,6 @@ await Host.CreateDefaultBuilder(args)
     .ConfigureServices(services =>
     {
         services
-            .AddAutoMapper(Assembly.GetExecutingAssembly())
             .AddSingleton<IConfiguration>(configuration)
             .Configure<DatabaseOptions>(configuration.GetSection("Database"))
             .AddSingleton<UtcNowDelegate>(() => DateTime.UtcNow)
