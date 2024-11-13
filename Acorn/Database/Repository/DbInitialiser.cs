@@ -25,7 +25,7 @@ public class DbInitialiser : IDbInitialiser
         var sqliteConnection = new SqliteConnection(_options.ConnectionString);
         sqliteConnection.Open();
         using var command = sqliteConnection.CreateCommand();
-        command.CommandText = File.ReadAllText($"Database/Sctips/{_options.Engine}/Init.sql");
+        command.CommandText = File.ReadAllText($"Database/Scripts/{_options.Engine}/Init.sql");
         command.ExecuteNonQuery();
         sqliteConnection.Close();
     }
