@@ -20,7 +20,7 @@ public class NewConnectionHostedService(
     ISessionGenerator sessionGenerator
 ) : IHostedService, IDisposable
 {
-    private readonly TcpListener _listener = new(IPAddress.Loopback, 8078);
+    private readonly TcpListener _listener = new(IPAddress.Any, 8078);
     private readonly ILogger<NewConnectionHostedService> _logger = logger;
     private readonly ILogger<PlayerConnection> _playerConnectionLogger = playerConnectionLogger;
     private readonly IServiceProvider _services = services;
