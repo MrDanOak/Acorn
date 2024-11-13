@@ -20,7 +20,7 @@ internal class AccountRequestClientPacketHandler(
     {
         (await _accountRepository.GetByKey(packet.Username)).Switch(async exists =>
         {
-            _logger.LogDebug("Account exists");
+            _logger.LogDebug("Account exists {username}", exists.Value.Username);
             await playerConnection.Send(new AccountReplyServerPacket()
             {
                 ReplyCode = AccountReply.Exists,
@@ -29,7 +29,7 @@ internal class AccountRequestClientPacketHandler(
         },
         async notFound =>
         {
-            _logger.LogDebug("Account \"{Account}\" does not exist", packet.Username);
+            _logger.LogDebug("Account \"{username}\" does not exist", packet.Username);
 
             if (playerConnection.StartSequence.Value > EoNumericLimits.CHAR_MAX)
                 playerConnection.StartSequence = InitSequenceStart.Generate(playerConnection.Rnd);

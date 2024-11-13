@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS Accounts (
     Username TEXT NOT NULL,
     Password TEXT NOT NULL,
+    Salt TEXT NOT NULL,
     FullName TEXT NOT NULL,
     Location TEXT NOT NULL,
     Email TEXT NOT NULL,
@@ -13,6 +14,7 @@ INSERT OR REPLACE INTO Accounts
 (
     Username,
     Password,
+    Salt,
     FullName,
     Location,
     Email,
@@ -23,6 +25,7 @@ INSERT OR REPLACE INTO Accounts
 VALUES
 (
     'acorn',
+    '1I+dieTmkT9qbF9YjSt1pkRvgAkAHqcStjRxOzuHwSc=',
     'acorn',
     'acorn',
     'acorn',

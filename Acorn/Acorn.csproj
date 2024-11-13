@@ -79,8 +79,4 @@
 	  </Content>
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Infrastructure\Options\" />
-	</ItemGroup>
-
 </Project>

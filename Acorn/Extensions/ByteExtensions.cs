@@ -1,4 +1,4 @@
-﻿namespace Acorn.Infrastructure.Extensions;
+﻿namespace Acorn.Extensions;
 
 public static class ByteExtensions
 {

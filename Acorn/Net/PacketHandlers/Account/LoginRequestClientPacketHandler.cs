@@ -1,5 +1,7 @@
-﻿using Acorn.Data.Repository;
+﻿using System.Text;
+using Acorn.Data.Repository;
 using Acorn.Extensions;
+using Acorn.Services.Security;
 using Microsoft.Extensions.Logging;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Client;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
@@ -20,22 +22,34 @@ public class LoginRequestClientPacketHandler(
     public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, LoginRequestClientPacket packet)
     {
         var responsePacket = (await _repository.GetByKey(packet.Username))
-            .Match(success =>
+            .Match(account =>
             {
-                if (_world.Players.Any(x => string.Equals(x.Account?.Username, success.Value.Username, StringComparison.InvariantCultureIgnoreCase)))
+                if (_world.Players.Any(x => string.Equals(x.Account?.Username, account.Value.Username, StringComparison.InvariantCultureIgnoreCase)))
                 {
                     return new LoginReplyServerPacket
                     {
                         ReplyCode = LoginReply.LoggedIn,
-                        ReplyCodeData = new LoginReplyServerPacket.ReplyCodeDataLoggedIn { }
+                        ReplyCodeData = new LoginReplyServerPacket.ReplyCodeDataLoggedIn()
                     };
                 }
 
-                playerConnection.Account = success.Value;
+                var salt = Encoding.UTF8.GetBytes(account.Value.Salt);
+                var valid = Hash.VerifyPassword(packet.Username, packet.Password, salt, account.Value.Password);
+
+                if (!valid)
+                {
+                    return new LoginReplyServerPacket
+                    {
+                        ReplyCode = LoginReply.WrongUserPassword,
+                        ReplyCodeData = new LoginReplyServerPacket.ReplyCodeDataWrongUserPassword()
+                    };
+                }
+                
+                playerConnection.Account = account.Value;
                 return new LoginReplyServerPacket
                 {
                     ReplyCode = LoginReply.Ok,
-                    ReplyCodeData = new LoginReplyServerPacket.ReplyCodeDataOk()
+                    ReplyCodeData = new LoginReplyServerPacket.ReplyCodeDataOk
                     {
                         Characters = playerConnection.Account.Characters.Select((x, id) => x.AsCharacterListEntry(id)).ToList()
                     }
