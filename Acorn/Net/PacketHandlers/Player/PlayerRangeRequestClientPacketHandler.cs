@@ -21,7 +21,7 @@ public class PlayerRangeRequestClientPacketHandler : IPacketHandler<PlayerRangeR
         {
             PlayersList = new PlayersList
             {
-                Players = map.Players.Select(x => x.Character.AsOnlinePlayer()).ToList()
+                Players = map.Players.Select(x => x.Character?.AsOnlinePlayer()).ToList()
             }
         });
 

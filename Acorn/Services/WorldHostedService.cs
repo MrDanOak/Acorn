@@ -14,9 +14,10 @@ internal class WorldHostedService : IHostedService
         
     }
 
-    public async Task StartAsync(CancellationToken cancellationToken)
+    public Task StartAsync(CancellationToken cancellationToken)
     {
-
+        // todo: world tick events, npcs moving etc...
+        return Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken)

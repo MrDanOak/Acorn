@@ -28,8 +28,8 @@ public class WelcomeAgreeClientPacketHandler : IPacketHandler<WelcomeAgreeClient
             FileType.Ecf => () => _dataRepository.Ecf.Serialize(eoWriter),
             FileType.Emf => () =>
             {
-                var map = _dataRepository.Maps.FirstOrDefault(map => map.Id == playerConnection.Character.Map)?.Map ??
-                    throw new ArgumentOutOfRangeException($"Could not find map {playerConnection.Character.Map} for character {playerConnection.Character.Name}");
+                var map = _dataRepository.Maps.FirstOrDefault(map => map.Id == playerConnection.Character?.Map)?.Map ??
+                    throw new ArgumentOutOfRangeException($"Could not find map {playerConnection.Character?.Map} for character {playerConnection.Character?.Name}");
 
                 map.Serialize(eoWriter);
             }

@@ -1,4 +1,5 @@
 ﻿
+using Microsoft.Extensions.Logging;
 using Moffat.EndlessOnline.SDK.Protocol;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
 
@@ -6,11 +7,13 @@ namespace Acorn.Net.PacketHandlers.Player.Talk;
 public class SetCommandHandler : ITalkHandler
 {
     private readonly WorldState _world;
+    private readonly ILogger<SetCommandHandler> _logger;
     const string Usage = "Usage: $set <player> <attribute> <value>";
 
-    public SetCommandHandler(WorldState world)
+    public SetCommandHandler(WorldState world, ILogger<SetCommandHandler> logger)
     {
         _world = world;
+        _logger = logger;
     }
 
     public bool CanHandle(string command) 
@@ -30,13 +33,20 @@ public class SetCommandHandler : ITalkHandler
             return;
         }
 
-        var target = _world.Players.FirstOrDefault(x => string.Equals(x.Character.Name, args[0], StringComparison.CurrentCultureIgnoreCase));
-        if (target == null)
+        var target = _world.Players.FirstOrDefault(x => string.Equals(x.Character?.Name, args[0], StringComparison.CurrentCultureIgnoreCase));
+        if (target is null)
         {
             await playerConnection.Send(new TalkServerServerPacket
             {
                 Message = $"Player {args[0]} not found."
             });
+            return;
+        }
+        
+
+        if (target.Character is null)
+        {
+            _logger.LogError("Tried set command on a character that has not been initialised");
             return;
         }
 

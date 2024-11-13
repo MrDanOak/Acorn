@@ -28,7 +28,12 @@ public class WorldState
     public MapState MapFor(PlayerConnection player)
         => Maps.Single(x => x.HasPlayer(player));
 
-    public Task Refresh(PlayerConnection player) => Warp(player, player.Character.Map, player.Character.X, player.Character.Y);
+    public Task Refresh(PlayerConnection player)=> 
+        player.Character switch
+        {
+            null => throw new InvalidOperationException("Cannot refresh player where the selected character is not initialised"),
+            _ => Warp(player, player.Character.Map, player.Character.X, player.Character.Y)
+        };
 
     public async Task Warp(PlayerConnection player, int mapId, int x, int y, WarpEffect warpEffect = WarpEffect.None, bool localWarp = true)
     {
@@ -107,7 +112,7 @@ public class MapState
         Characters = Players
             .Where(x => x.Character is not null)
             .Where(x => except == null || x != except)
-            .Select(x => x.Character.AsCharacterMapInfo(x.SessionId, warpEffect))
+            .Select(x => x.Character?.AsCharacterMapInfo(x.SessionId, warpEffect))
             .ToList(),
         Items = [],
         Npcs = AsNpcMapInfo()
@@ -117,6 +122,11 @@ public class MapState
 
     public async Task Enter(PlayerConnection player, WarpEffect warpEffect = WarpEffect.None)
     {
+        if (player.Character is null)
+        {
+            return;
+        }
+        
         player.Character.Map = Id;
 
         if (!Players.Contains(player))
@@ -148,8 +158,8 @@ public class MapState
     {
         foreach (var player in Players)
         {
-            var before = player.Character.Hp;
-            var after = player.Character.Recover(15);
+            var before = player.Character?.Hp;
+            var after = player.Character?.Recover(15);
         }
     }
 }

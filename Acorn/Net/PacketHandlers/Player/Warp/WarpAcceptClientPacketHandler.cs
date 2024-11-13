@@ -1,4 +1,5 @@
-﻿using Moffat.EndlessOnline.SDK.Protocol.Net.Client;
+﻿using Microsoft.Extensions.Logging;
+using Moffat.EndlessOnline.SDK.Protocol.Net.Client;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
 using OneOf;
 using OneOf.Types;
@@ -7,16 +8,24 @@ namespace Acorn.Net.PacketHandlers.Player.Warp;
 public class WarpAcceptClientPacketHandler : IPacketHandler<WarpAcceptClientPacket>
 {
     private WorldState _world;
+    private readonly ILogger<WarpAcceptClientPacketHandler> _logger;
 
-    public WarpAcceptClientPacketHandler(WorldState world)
+    public WarpAcceptClientPacketHandler(WorldState world, ILogger<WarpAcceptClientPacketHandler> logger)
     {
         _world = world;
+        _logger = logger;
     }
 
     public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, WarpAcceptClientPacket packet)
     {
-        if (playerConnection.WarpSession == null)
+        if (playerConnection.WarpSession is null)
         {
+            return new Error();
+        }
+
+        if (playerConnection.Character is null)
+        {
+            _logger.LogError("Player connection has no Character initialised.");
             return new Error();
         }
 

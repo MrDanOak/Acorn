@@ -24,7 +24,7 @@ public class PlayersRequestClientPacketHandler : IPacketHandler<PlayersRequestCl
             {
                 PlayersList = new()
                 {
-                    Players = _world.Players.Select(x => x.Character.AsOnlinePlayer()).ToList()
+                    Players = _world.Players.Select(x => x.Character?.AsOnlinePlayer()).ToList()
                 }
             }
         });

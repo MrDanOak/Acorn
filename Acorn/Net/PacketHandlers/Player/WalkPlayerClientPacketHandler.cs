@@ -19,6 +19,12 @@ internal class WalkPlayerClientPacketHandler : IPacketHandler<WalkPlayerClientPa
 
     public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, WalkPlayerClientPacket packet)
     {
+        if (playerConnection.Character is null)
+        {
+            _logger.LogError("Tried to handler player walk, but the character associated with this connection has not been initialised");
+            return new Error();
+        }
+        
         playerConnection.Character.X = packet.WalkAction.Direction switch
         {
             Direction.Left => playerConnection.Character.X - 1,
@@ -37,7 +43,7 @@ internal class WalkPlayerClientPacketHandler : IPacketHandler<WalkPlayerClientPa
         var map = _world.MapFor(playerConnection);
 
         var otherPlayers = map.Players
-            .Where(x => x.Character.Map == map.Id).Where(x => x != playerConnection).ToList();
+            .Where(x => x.Character?.Map == map.Id).Where(x => x != playerConnection).ToList();
 
         var otherPlayerTasks = otherPlayers.Select(async otherPlayer =>
         {

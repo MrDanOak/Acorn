@@ -1,4 +1,5 @@
-﻿using Moffat.EndlessOnline.SDK.Protocol.Net.Client;
+﻿using Moffat.EndlessOnline.SDK.Protocol;
+using Moffat.EndlessOnline.SDK.Protocol.Net.Client;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
 using OneOf;
 using OneOf.Types;
@@ -16,11 +17,11 @@ internal class AttackUseClientPacketHandler : IPacketHandler<AttackUseClientPack
         _now = now;
     }
 
-    public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, AttackUseClientPacket packet)
+    public Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, AttackUseClientPacket packet)
     {
         if ((_now() - _timeSinceLastAttack).TotalMilliseconds < 500)
         {
-            return new Success();
+            return Task.FromResult<OneOf<Success, Error>>(new Success());
         }
 
         var map = _world.MapFor(playerConnection);
@@ -29,13 +30,13 @@ internal class AttackUseClientPacketHandler : IPacketHandler<AttackUseClientPack
         {
             await otherPlayer.Send(new AttackPlayerServerPacket
             {
-                Direction = playerConnection.Character.Direction,
+                Direction = playerConnection.Character?.Direction ?? Direction.Down,
                 PlayerId = playerConnection.SessionId
             });
         });
 
         _timeSinceLastAttack = DateTime.UtcNow;
-        return new Success();
+        return Task.FromResult<OneOf<Success, Error>>(new Success());
     }
 
     public Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, object packet)

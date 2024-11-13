@@ -26,7 +26,7 @@ internal class WelcomeMsgClientPacketHandler : IPacketHandler<WelcomeMsgClientPa
     public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, WelcomeMsgClientPacket packet)
     {
         playerConnection.ClientState = ClientState.InGame;
-        var map = _world.Maps.First(x => x.Id == playerConnection.Character.Map);
+        var map = _world.Maps.First(x => x.Id == playerConnection.Character?.Map);
 
         await map.Enter(playerConnection);
 
@@ -35,7 +35,7 @@ internal class WelcomeMsgClientPacketHandler : IPacketHandler<WelcomeMsgClientPa
             WelcomeCode = WelcomeCode.EnterGame,
             WelcomeCodeData = new WelcomeReplyServerPacket.WelcomeCodeDataEnterGame()
             {
-                Items = playerConnection.Character.Items().AsT0.Value.ToList(),
+                Items = playerConnection.Character?.Items().AsT0.Value.ToList(),
                 News = new List<string>() { " " }.Concat(_newsTxt.Concat(Enumerable.Range(0, 8 - _newsTxt.Length).Select(_ => ""))).ToList(),
                 Weight = new Weight
                 {

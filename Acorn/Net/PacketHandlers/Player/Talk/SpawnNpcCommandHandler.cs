@@ -1,4 +1,5 @@
 ﻿using Acorn.Data.Repository;
+using Microsoft.Extensions.Logging;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
 using Moffat.EndlessOnline.SDK.Protocol.Pub;
 
@@ -7,11 +8,13 @@ public class SpawnNpcCommandHandler : ITalkHandler
 {
     private WorldState _world;
     private IDataFileRepository _dataFiles;
+    private readonly ILogger<SpawnNpcCommandHandler> _logger;
 
-    public SpawnNpcCommandHandler(WorldState world, IDataFileRepository dataFiles)
+    public SpawnNpcCommandHandler(WorldState world, IDataFileRepository dataFiles, ILogger<SpawnNpcCommandHandler> logger)
     {
         _world = world;
         _dataFiles = dataFiles;
+        _logger = logger;
     }
 
     public bool CanHandle(string command) =>
@@ -53,6 +56,12 @@ public class SpawnNpcCommandHandler : ITalkHandler
 
     private async Task SpawnNpc(PlayerConnection playerConnection, EnfRecord enf)
     {
+        if (playerConnection.Character is null)
+        {
+            _logger.LogError("Character has not been initialised on connection");
+            return;
+        }
+        
         var npcId = _dataFiles.Enf.Npcs.FindIndex(x => enf.GetHashCode() == x.GetHashCode());
 
         var npc = new NpcState(enf)

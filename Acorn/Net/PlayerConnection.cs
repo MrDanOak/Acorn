@@ -38,7 +38,7 @@ public class PlayerConnection : IDisposable
     public int SessionId { get; set; }
     public WarpSession? WarpSession { get; set; }
 
-    public Character Character { get; set; }
+    public Character? Character { get; set; }
 
     public PlayerConnection(
         IServiceProvider services,

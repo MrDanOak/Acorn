@@ -22,7 +22,7 @@ internal class TalkReportClientPacketHandler : IPacketHandler<TalkReportClientPa
         var map = _world.MapFor(playerConnection);
         var author = playerConnection.Character;
 
-        if (author.Admin > AdminLevel.Player && packet.Message.StartsWith("$"))
+        if (author?.Admin > AdminLevel.Player && packet.Message.StartsWith("$"))
         {
             var args = packet.Message.Split(" ");
             var command = args[0][1..];

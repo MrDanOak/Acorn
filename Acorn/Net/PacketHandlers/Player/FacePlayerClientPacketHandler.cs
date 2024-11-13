@@ -15,6 +15,11 @@ internal class FacePlayerClientPacketHandler : IPacketHandler<FacePlayerClientPa
 
     public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, FacePlayerClientPacket packet)
     {
+        if (playerConnection.Character is null)
+        {
+            return new Error();
+        }
+        
         playerConnection.Character.Direction = packet.Direction;
 
         var broadcast = _world.MapFor(playerConnection).Players.ToList().Select(player => player.Send(new FacePlayerServerPacket
