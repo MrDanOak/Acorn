@@ -3,23 +3,10 @@
 namespace Acorn.Infrastructure;
 public class SessionGenerator : ISessionGenerator
 {
-    private readonly WorldState _worldState;
-    private Random _rnd;
-
-    public SessionGenerator(WorldState worldState)
-    {
-        _rnd = new Random();
-        _worldState = worldState;
-    }
+    private readonly Random _rnd = new();
 
     public int Generate()
-    {
-        var sessionId = 0;
-        do {
-            sessionId = _rnd.Next(1, (int)EoNumericLimits.SHORT_MAX);
-        } while (_worldState.Players.Any(x => x.SessionId == sessionId));
-        return sessionId;
-    }
+        => _rnd.Next(1, (int)EoNumericLimits.SHORT_MAX);
 }
 
 public interface ISessionGenerator
