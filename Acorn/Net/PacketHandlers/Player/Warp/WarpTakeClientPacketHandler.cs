@@ -6,10 +6,11 @@ using OneOf;
 using OneOf.Types;
 
 namespace Acorn.Net.PacketHandlers.Player.Warp;
+
 internal class WarpTakeClientPacketHandler : IPacketHandler<WarpTakeClientPacket>
 {
-    private readonly WorldState _world;
     private readonly ILogger<WarpTakeClientPacketHandler> _logger;
+    private readonly WorldState _world;
 
     public WarpTakeClientPacketHandler(WorldState world, ILogger<WarpTakeClientPacketHandler> logger)
     {
@@ -34,9 +35,9 @@ internal class WarpTakeClientPacketHandler : IPacketHandler<WarpTakeClientPacket
             ReplyCode = InitReply.WarpMap,
             ReplyCodeData = new InitInitServerPacket.ReplyCodeDataWarpMap
             {
-                MapFile = new MapFile()
+                MapFile = new MapFile
                 {
-                    Content = writer.ToByteArray(),
+                    Content = writer.ToByteArray()
                 }
             }
         });
@@ -45,5 +46,7 @@ internal class WarpTakeClientPacketHandler : IPacketHandler<WarpTakeClientPacket
     }
 
     public Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, object packet)
-        => HandleAsync(playerConnection, (WarpTakeClientPacket)packet);
+    {
+        return HandleAsync(playerConnection, (WarpTakeClientPacket)packet);
+    }
 }

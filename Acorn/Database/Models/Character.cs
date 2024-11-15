@@ -1,17 +1,17 @@
-﻿using Acorn.Data.Repository;
+﻿using System.Collections.Concurrent;
+using Acorn.Database.Repository;
 using Moffat.EndlessOnline.SDK.Protocol;
 using Moffat.EndlessOnline.SDK.Protocol.Net;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
 using Moffat.EndlessOnline.SDK.Protocol.Pub;
 using OneOf;
 using OneOf.Types;
-using System.Collections.Concurrent;
 
-namespace Acorn.Data.Models;
+namespace Acorn.Database.Models;
 
 public class Character
 {
-    public string Accounts_Username { get; set; }
+    public required string Accounts_Username { get; set; }
     public string? Name { get; set; }
     public string? Title { get; set; }
     public string? Home { get; set; }
@@ -81,10 +81,7 @@ public class Character
                 Con = @class.Con + Con;
                 Cha = @class.Cha + Cha;
             },
-            error =>
-            {
-                throw new Exception("Could not calculate stats for character " + Name + ". Error: " + error);
-            }
+            error => { throw new Exception("Could not calculate stats for character " + Name + ". Error: " + error); }
         );
     }
 
@@ -99,7 +96,7 @@ public class Character
 
     public OneOf<Success<EquipmentPaperdoll>, Error<string>> Equipment()
     {
-        return new Success<EquipmentPaperdoll>(new EquipmentPaperdoll()
+        return new Success<EquipmentPaperdoll>(new EquipmentPaperdoll
         {
             Hat = Paperdoll.Hat,
             Necklace = Paperdoll.Necklace,
@@ -112,7 +109,7 @@ public class Character
             Accessory = Paperdoll.Accessory,
             Ring = [Paperdoll.Ring1, Paperdoll.Ring2],
             Bracer = [Paperdoll.Bracer1, Paperdoll.Bracer2],
-            Armlet = [Paperdoll.Armlet1, Paperdoll.Armlet2],
+            Armlet = [Paperdoll.Armlet1, Paperdoll.Armlet2]
         });
     }
 

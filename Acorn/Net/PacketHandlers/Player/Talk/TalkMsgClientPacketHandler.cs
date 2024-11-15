@@ -4,9 +4,10 @@ using OneOf;
 using OneOf.Types;
 
 namespace Acorn.Net.PacketHandlers.Player.Talk;
+
 internal class TalkMsgClientPacketHandler : IPacketHandler<TalkMsgClientPacket>
 {
-    private WorldState _world;
+    private readonly WorldState _world;
 
     public TalkMsgClientPacketHandler(WorldState world)
     {
@@ -15,8 +16,9 @@ internal class TalkMsgClientPacketHandler : IPacketHandler<TalkMsgClientPacket>
 
     public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, TalkMsgClientPacket packet)
     {
-        _world.GlobalMessages.Add(new GlobalMessage(Guid.NewGuid(), packet.Message, playerConnection.Character?.Name!, DateTime.UtcNow));
-        
+        _world.GlobalMessages.Add(new GlobalMessage(Guid.NewGuid(), packet.Message, playerConnection.Character?.Name!,
+            DateTime.UtcNow));
+
         var broadcast = _world.Players
             .Where(x => x != playerConnection && x.IsListeningToGlobal)
             .Select(x => x.Send(new TalkMsgServerPacket
@@ -30,5 +32,7 @@ internal class TalkMsgClientPacketHandler : IPacketHandler<TalkMsgClientPacket>
     }
 
     public Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, object packet)
-        => HandleAsync(playerConnection, (TalkMsgClientPacket)packet);
+    {
+        return HandleAsync(playerConnection, (TalkMsgClientPacket)packet);
+    }
 }

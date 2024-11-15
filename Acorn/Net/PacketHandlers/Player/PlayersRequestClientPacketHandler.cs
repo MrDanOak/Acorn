@@ -6,6 +6,7 @@ using OneOf.Types;
 using static Moffat.EndlessOnline.SDK.Protocol.Net.Server.InitInitServerPacket;
 
 namespace Acorn.Net.PacketHandlers.Player;
+
 public class PlayersRequestClientPacketHandler : IPacketHandler<PlayersRequestClientPacket>
 {
     private readonly WorldState _world;
@@ -15,14 +16,15 @@ public class PlayersRequestClientPacketHandler : IPacketHandler<PlayersRequestCl
         _world = world;
     }
 
-    public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, PlayersRequestClientPacket packet)
+    public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection,
+        PlayersRequestClientPacket packet)
     {
         await playerConnection.Send(new InitInitServerPacket
         {
             ReplyCode = InitReply.PlayersList,
             ReplyCodeData = new ReplyCodeDataPlayersList
             {
-                PlayersList = new()
+                PlayersList = new PlayersList
                 {
                     Players = _world.Players.Select(x => x.Character?.AsOnlinePlayer()).ToList()
                 }
@@ -33,5 +35,7 @@ public class PlayersRequestClientPacketHandler : IPacketHandler<PlayersRequestCl
     }
 
     public Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, object packet)
-        => HandleAsync(playerConnection, (PlayersRequestClientPacket)packet);
+    {
+        return HandleAsync(playerConnection, (PlayersRequestClientPacket)packet);
+    }
 }

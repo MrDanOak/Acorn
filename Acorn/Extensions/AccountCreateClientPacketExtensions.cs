@@ -1,16 +1,16 @@
-﻿using Acorn.Data.Models;
+﻿using System.Text;
 using Acorn.Database.Models;
-using Acorn.Services.Security;
+using Acorn.Infrastructure.Security;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Client;
-using System.Text;
 
 namespace Acorn.Extensions;
+
 public static class AccountCreateClientPacketExtensions
 {
     public static Account AsNewAccount(this AccountCreateClientPacket packet, DateTime created)
     {
         var password = Hash.HashPassword(packet.Username, packet.Password, out var salt);
-        return new()
+        return new Account
         {
             Characters = new List<Character>(),
             Country = packet.Location,

@@ -1,82 +1,84 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Dapper" Version="2.1.35" />
-		<PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.1" />
-		<PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.8" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0-preview.7.24405.7" />
-		<PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0-preview.7.24405.7" />
-		<PackageReference Include="Moffat.EndlessOnline.SDK" Version="1.0.0" />
-		<PackageReference Include="OneOf" Version="3.0.271" />
-	</ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Dapper" Version="2.1.35"/>
+        <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.1"/>
+        <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.8"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0-preview.7.24405.7"/>
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0-preview.7.24405.7"/>
+        <PackageReference Include="Moffat.EndlessOnline.SDK" Version="1.0.0"/>
+        <PackageReference Include="OneOf" Version="3.0.271"/>
+        <PackageReference Include="Refit" Version="8.0.0" />
+        <PackageReference Include="Refit.HttpClientFactory" Version="8.0.0" />
+    </ItemGroup>
 
-	<ItemGroup>
-		<None Update="appsettings.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-	</ItemGroup>
+    <ItemGroup>
+        <None Update="appsettings.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
 
-	<ItemGroup>
-		<Content Include="Data\**\*.*">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
+    <ItemGroup>
+        <Content Include="Data\**\*.*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
 
-	<ItemGroup>
-	  <None Remove="Database\Scripts\MSSQL\Init.sql" />
-	  <None Remove="Database\Scripts\SQLite\Account\Create.sql" />
-	  <None Remove="Database\Scripts\SQLite\Account\Delete.sql" />
-	  <None Remove="Database\Scripts\SQLite\Account\GetAll.sql" />
-	  <None Remove="Database\Scripts\SQLite\Account\GetByKey.sql" />
-	  <None Remove="Database\Scripts\SQLite\Account\GetCharacters.sql" />
-	  <None Remove="Database\Scripts\SQLite\Account\Update.sql" />
-	  <None Remove="Database\Scripts\SQLite\Character\Create.sql" />
-	  <None Remove="Database\Scripts\SQLite\Character\GetByKey.sql" />
-	  <None Remove="Database\Scripts\SQLite\Character\Update.sql" />
-	  <None Remove="Database\Scripts\SQLite\Init.sql" />
-	</ItemGroup>
+    <ItemGroup>
+        <None Remove="Database\Scripts\MSSQL\Init.sql"/>
+        <None Remove="Database\Scripts\SQLite\Account\Create.sql"/>
+        <None Remove="Database\Scripts\SQLite\Account\Delete.sql"/>
+        <None Remove="Database\Scripts\SQLite\Account\GetAll.sql"/>
+        <None Remove="Database\Scripts\SQLite\Account\GetByKey.sql"/>
+        <None Remove="Database\Scripts\SQLite\Account\GetCharacters.sql"/>
+        <None Remove="Database\Scripts\SQLite\Account\Update.sql"/>
+        <None Remove="Database\Scripts\SQLite\Character\Create.sql"/>
+        <None Remove="Database\Scripts\SQLite\Character\GetByKey.sql"/>
+        <None Remove="Database\Scripts\SQLite\Character\Update.sql"/>
+        <None Remove="Database\Scripts\SQLite\Init.sql"/>
+    </ItemGroup>
 
-	<ItemGroup>
-	  <Content Include="Database\Scripts\MSSQL\Init.sql">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Database\Scripts\SQLite\Account\Create.sql">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Database\Scripts\SQLite\Account\Delete.sql">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Database\Scripts\SQLite\Account\GetAll.sql">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Database\Scripts\SQLite\Account\GetByKey.sql">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Database\Scripts\SQLite\Account\GetCharacters.sql">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Database\Scripts\SQLite\Account\Update.sql">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Database\Scripts\SQLite\Character\Create.sql">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Database\Scripts\SQLite\Character\GetByKey.sql">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Database\Scripts\SQLite\Character\Update.sql">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Database\Scripts\SQLite\Init.sql">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	</ItemGroup>
+    <ItemGroup>
+        <Content Include="Database\Scripts\MSSQL\Init.sql">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Database\Scripts\SQLite\Account\Create.sql">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Database\Scripts\SQLite\Account\Delete.sql">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Database\Scripts\SQLite\Account\GetAll.sql">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Database\Scripts\SQLite\Account\GetByKey.sql">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Database\Scripts\SQLite\Account\GetCharacters.sql">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Database\Scripts\SQLite\Account\Update.sql">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Database\Scripts\SQLite\Character\Create.sql">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Database\Scripts\SQLite\Character\GetByKey.sql">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Database\Scripts\SQLite\Character\Update.sql">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Database\Scripts\SQLite\Init.sql">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
 
 </Project>

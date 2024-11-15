@@ -1,14 +1,14 @@
-﻿
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Moffat.EndlessOnline.SDK.Protocol;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
 
 namespace Acorn.Net.PacketHandlers.Player.Talk;
+
 public class SetCommandHandler : ITalkHandler
 {
-    private readonly WorldState _world;
+    private const string Usage = "Usage: $set <player> <attribute> <value>";
     private readonly ILogger<SetCommandHandler> _logger;
-    const string Usage = "Usage: $set <player> <attribute> <value>";
+    private readonly WorldState _world;
 
     public SetCommandHandler(WorldState world, ILogger<SetCommandHandler> logger)
     {
@@ -16,8 +16,10 @@ public class SetCommandHandler : ITalkHandler
         _logger = logger;
     }
 
-    public bool CanHandle(string command) 
-        => string.Equals("set", command, StringComparison.InvariantCultureIgnoreCase);
+    public bool CanHandle(string command)
+    {
+        return string.Equals("set", command, StringComparison.InvariantCultureIgnoreCase);
+    }
 
     public async Task HandleAsync(PlayerConnection playerConnection, string command, params string[] args)
     {
@@ -26,14 +28,15 @@ public class SetCommandHandler : ITalkHandler
 
         if (args.Length < 3)
         {
-            await playerConnection.Send(new TalkServerServerPacket 
-            { 
+            await playerConnection.Send(new TalkServerServerPacket
+            {
                 Message = Usage
             });
             return;
         }
 
-        var target = _world.Players.FirstOrDefault(x => string.Equals(x.Character?.Name, args[0], StringComparison.CurrentCultureIgnoreCase));
+        var target = _world.Players.FirstOrDefault(x =>
+            string.Equals(x.Character?.Name, args[0], StringComparison.CurrentCultureIgnoreCase));
         if (target is null)
         {
             await playerConnection.Send(new TalkServerServerPacket
@@ -42,7 +45,7 @@ public class SetCommandHandler : ITalkHandler
             });
             return;
         }
-        
+
 
         if (target.Character is null)
         {

@@ -4,6 +4,7 @@ using OneOf;
 using OneOf.Types;
 
 namespace Acorn.Net.PacketHandlers.Player;
+
 public class RefreshRequestClientPacketHandler : IPacketHandler<RefreshRequestClientPacket>
 {
     private readonly WorldState _world;
@@ -13,7 +14,8 @@ public class RefreshRequestClientPacketHandler : IPacketHandler<RefreshRequestCl
         _world = world;
     }
 
-    public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, RefreshRequestClientPacket packet)
+    public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection,
+        RefreshRequestClientPacket packet)
     {
         await playerConnection.Send(new RefreshReplyServerPacket
         {
@@ -23,5 +25,7 @@ public class RefreshRequestClientPacketHandler : IPacketHandler<RefreshRequestCl
     }
 
     public Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, object packet)
-        => HandleAsync(playerConnection, (RefreshRequestClientPacket)packet);
+    {
+        return HandleAsync(playerConnection, (RefreshRequestClientPacket)packet);
+    }
 }

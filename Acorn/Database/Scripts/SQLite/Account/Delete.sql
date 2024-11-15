@@ -1,1 +1,3 @@
-DELETE FROM Accounts WHERE Username = @Username
+DELETE
+FROM Accounts
+WHERE Username = @Username

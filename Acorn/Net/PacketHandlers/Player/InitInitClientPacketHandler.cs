@@ -1,25 +1,27 @@
-﻿using Moffat.EndlessOnline.SDK.Data;
-using Moffat.EndlessOnline.SDK.Packet;
+﻿using Acorn.Net.Models;
+using Microsoft.Extensions.Logging;
+using Moffat.EndlessOnline.SDK.Data;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Client;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
-using OneOf.Types;
 using OneOf;
-using Microsoft.Extensions.Logging;
-using Acorn.Net.Models;
+using OneOf.Types;
 
 namespace Acorn.Net.PacketHandlers.Player;
 
-internal class InitInitClientPacketHandler(ILogger<InitInitClientPacketHandler> logger) : IPacketHandler<InitInitClientPacket>
+internal class InitInitClientPacketHandler(ILogger<InitInitClientPacketHandler> logger)
+    : IPacketHandler<InitInitClientPacket>
 {
     private readonly ILogger<InitInitClientPacketHandler> _logger = logger;
 
     public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, InitInitClientPacket packet)
     {
-        playerConnection.PacketSequencer = playerConnection.PacketSequencer.WithSequenceStart(playerConnection.StartSequence);
+        playerConnection.PacketSequencer =
+            playerConnection.PacketSequencer.WithSequenceStart(playerConnection.StartSequence);
         playerConnection.ClientEncryptionMulti = playerConnection.Rnd.Next(7) + 6;
         playerConnection.ServerEncryptionMulti = playerConnection.Rnd.Next(7) + 6;
 
-        _logger.LogDebug("Sending Init Server Packet with Seq 1: {Seq1}, Seq 2: {Seq2} PlayerId: {PlayerId}", playerConnection.StartSequence.Seq1, playerConnection.StartSequence.Seq2, playerConnection.SessionId);
+        _logger.LogDebug("Sending Init Server Packet with Seq 1: {Seq1}, Seq 2: {Seq2} PlayerId: {PlayerId}",
+            playerConnection.StartSequence.Seq1, playerConnection.StartSequence.Seq2, playerConnection.SessionId);
         await playerConnection.Send(new InitInitServerPacket
         {
             ReplyCode = InitReply.Ok,
@@ -39,5 +41,8 @@ internal class InitInitClientPacketHandler(ILogger<InitInitClientPacketHandler> 
         return new Success();
     }
 
-    public Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, object packet) => HandleAsync(playerConnection, (InitInitClientPacket)packet);
+    public Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, object packet)
+    {
+        return HandleAsync(playerConnection, (InitInitClientPacket)packet);
+    }
 }

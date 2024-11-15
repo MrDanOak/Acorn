@@ -1,6 +1,5 @@
-﻿using Acorn.Data.Models;
+﻿namespace Acorn.Database.Models;
 
-namespace Acorn.Database.Models;
 public class Account
 {
     public required string Username { get; set; }

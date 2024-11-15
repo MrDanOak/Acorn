@@ -5,10 +5,11 @@ using OneOf;
 using OneOf.Types;
 
 namespace Acorn.Net.PacketHandlers.Player;
+
 internal class AttackUseClientPacketHandler : IPacketHandler<AttackUseClientPacket>
 {
-    private readonly WorldState _world;
     private readonly UtcNowDelegate _now;
+    private readonly WorldState _world;
     private DateTime _timeSinceLastAttack;
 
     public AttackUseClientPacketHandler(WorldState world, UtcNowDelegate now)
@@ -40,5 +41,7 @@ internal class AttackUseClientPacketHandler : IPacketHandler<AttackUseClientPack
     }
 
     public Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, object packet)
-         => HandleAsync(playerConnection, (AttackUseClientPacket)packet);
+    {
+        return HandleAsync(playerConnection, (AttackUseClientPacket)packet);
+    }
 }

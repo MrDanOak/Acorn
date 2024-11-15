@@ -7,5 +7,5 @@ public enum ClientState
     Accepted,
     LoggedIn,
     EnteringGame,
-    InGame,
+    InGame
 }

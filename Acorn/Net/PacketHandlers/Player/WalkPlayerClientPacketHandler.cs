@@ -6,6 +6,7 @@ using OneOf;
 using OneOf.Types;
 
 namespace Acorn.Net.PacketHandlers.Player;
+
 internal class WalkPlayerClientPacketHandler : IPacketHandler<WalkPlayerClientPacket>
 {
     private readonly ILogger<WalkPlayerClientPacketHandler> _logger;
@@ -17,14 +18,16 @@ internal class WalkPlayerClientPacketHandler : IPacketHandler<WalkPlayerClientPa
         _world = world;
     }
 
-    public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, WalkPlayerClientPacket packet)
+    public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection,
+        WalkPlayerClientPacket packet)
     {
         if (playerConnection.Character is null)
         {
-            _logger.LogError("Tried to handler player walk, but the character associated with this connection has not been initialised");
+            _logger.LogError(
+                "Tried to handler player walk, but the character associated with this connection has not been initialised");
             return new Error();
         }
-        
+
         playerConnection.Character.X = packet.WalkAction.Direction switch
         {
             Direction.Left => playerConnection.Character.X - 1,
@@ -65,5 +68,7 @@ internal class WalkPlayerClientPacketHandler : IPacketHandler<WalkPlayerClientPa
     }
 
     public Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, object packet)
-        => HandleAsync(playerConnection, (WalkPlayerClientPacket)packet);
+    {
+        return HandleAsync(playerConnection, (WalkPlayerClientPacket)packet);
+    }
 }

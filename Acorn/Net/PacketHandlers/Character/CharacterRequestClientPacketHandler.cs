@@ -4,9 +4,11 @@ using OneOf;
 using OneOf.Types;
 
 namespace Acorn.Net.PacketHandlers.Character;
+
 internal class CharacterRequestClientPacketHandler : IPacketHandler<CharacterRequestClientPacket>
 {
-    public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, CharacterRequestClientPacket packet)
+    public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection,
+        CharacterRequestClientPacket packet)
     {
         if (string.Equals(packet.RequestString, "new", StringComparison.OrdinalIgnoreCase) is false)
         {
@@ -26,12 +28,14 @@ internal class CharacterRequestClientPacketHandler : IPacketHandler<CharacterReq
         await playerConnection.Send(new CharacterReplyServerPacket
         {
             ReplyCode = (CharacterReply)playerConnection.SessionId,
-            ReplyCodeData = new CharacterReplyServerPacket.ReplyCodeDataDefault { }
+            ReplyCodeData = new CharacterReplyServerPacket.ReplyCodeDataDefault()
         });
 
         return new Success();
     }
 
     public Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, object packet)
-        => HandleAsync(playerConnection, (CharacterRequestClientPacket)packet);
+    {
+        return HandleAsync(playerConnection, (CharacterRequestClientPacket)packet);
+    }
 }

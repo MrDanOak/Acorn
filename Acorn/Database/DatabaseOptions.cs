@@ -1,4 +1,5 @@
-﻿namespace Acorn.Data;
+﻿namespace Acorn.Database;
+
 public class DatabaseOptions
 {
     public string? ConnectionString { get; set; }

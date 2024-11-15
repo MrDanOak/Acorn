@@ -1,14 +1,14 @@
-﻿using Acorn.Data;
-using Acorn.Data.Repository;
-using Acorn.Database.Models;
+﻿using Acorn.Database.Models;
+using Acorn.Database.Repository;
 using Microsoft.Extensions.Logging;
 
 namespace Acorn.Infrastructure;
+
 public class StatsReporter : IStatsReporter
 {
-    private readonly ILogger<StatsReporter> _logger;
     private readonly IDbRepository<Account> _accountRepository;
     private readonly IDataFileRepository _dataRepository;
+    private readonly ILogger<StatsReporter> _logger;
 
     public StatsReporter(
         ILogger<StatsReporter> logger,
@@ -23,10 +23,9 @@ public class StatsReporter : IStatsReporter
 
     public async Task Report()
     {
-        (await _accountRepository.GetAll()).Switch(accounts =>
-        {
-            _logger.LogInformation("Loaded {Accounts} account(s)", accounts.Value.ToList().Count);
-        }, err => { });
+        (await _accountRepository.GetAll()).Switch(
+            accounts => { _logger.LogInformation("Loaded {Accounts} account(s)", accounts.Value.ToList().Count); },
+            err => { });
 
         _logger.LogInformation("Loaded {Items} items", _dataRepository.Eif.Items.Count());
         _logger.LogInformation("Loaded {Npcs} npcs", _dataRepository.Enf.Npcs.Count());

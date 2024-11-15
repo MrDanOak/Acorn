@@ -1,15 +1,15 @@
-﻿using Acorn.Net.PacketHandlers.Player.Talk;
-using Moffat.EndlessOnline.SDK.Protocol;
+﻿using Moffat.EndlessOnline.SDK.Protocol;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Client;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
 using OneOf;
 using OneOf.Types;
 
-namespace Acorn.Net.PacketHandlers.Player;
+namespace Acorn.Net.PacketHandlers.Player.Talk;
+
 internal class TalkReportClientPacketHandler : IPacketHandler<TalkReportClientPacket>
 {
-    private WorldState _world;
     private readonly IEnumerable<ITalkHandler> _talkHandlers;
+    private readonly WorldState _world;
 
     public TalkReportClientPacketHandler(WorldState world, IEnumerable<ITalkHandler> talkHandlers)
     {
@@ -17,7 +17,8 @@ internal class TalkReportClientPacketHandler : IPacketHandler<TalkReportClientPa
         _talkHandlers = talkHandlers;
     }
 
-    public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, TalkReportClientPacket packet)
+    public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection,
+        TalkReportClientPacket packet)
     {
         var map = _world.MapFor(playerConnection);
         var author = playerConnection.Character;
@@ -29,7 +30,9 @@ internal class TalkReportClientPacketHandler : IPacketHandler<TalkReportClientPa
 
             var handler = _talkHandlers.FirstOrDefault(x => x.CanHandle(command));
             if (handler is null)
-                return new Success();
+            {
+                return new Error();
+            }
 
             await handler.HandleAsync(playerConnection, command, args[1..]);
             return new Success();
@@ -44,5 +47,7 @@ internal class TalkReportClientPacketHandler : IPacketHandler<TalkReportClientPa
     }
 
     public Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, object packet)
-        => HandleAsync(playerConnection, (TalkReportClientPacket)packet);
+    {
+        return HandleAsync(playerConnection, (TalkReportClientPacket)packet);
+    }
 }

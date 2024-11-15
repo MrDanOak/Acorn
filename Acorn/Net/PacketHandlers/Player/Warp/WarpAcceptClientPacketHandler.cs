@@ -5,10 +5,11 @@ using OneOf;
 using OneOf.Types;
 
 namespace Acorn.Net.PacketHandlers.Player.Warp;
+
 public class WarpAcceptClientPacketHandler : IPacketHandler<WarpAcceptClientPacket>
 {
-    private WorldState _world;
     private readonly ILogger<WarpAcceptClientPacketHandler> _logger;
+    private readonly WorldState _world;
 
     public WarpAcceptClientPacketHandler(WorldState world, ILogger<WarpAcceptClientPacketHandler> logger)
     {
@@ -16,7 +17,8 @@ public class WarpAcceptClientPacketHandler : IPacketHandler<WarpAcceptClientPack
         _logger = logger;
     }
 
-    public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, WarpAcceptClientPacket packet)
+    public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection,
+        WarpAcceptClientPacket packet)
     {
         if (playerConnection.WarpSession is null)
         {
@@ -73,5 +75,7 @@ public class WarpAcceptClientPacketHandler : IPacketHandler<WarpAcceptClientPack
     }
 
     public Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, object packet)
-        => HandleAsync(playerConnection, (WarpAcceptClientPacket)packet);
+    {
+        return HandleAsync(playerConnection, (WarpAcceptClientPacket)packet);
+    }
 }
