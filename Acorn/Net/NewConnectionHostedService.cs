@@ -19,7 +19,7 @@ public class NewConnectionHostedService(
     IDbRepository<Character> characterRepository,
     ISessionGenerator sessionGenerator,
     IOptions<ServerOptions> serverOptions
-) : IHostedService, IDisposable
+) : BackgroundService, IDisposable
 {
     private readonly IDbRepository<Character> _characterRepository = characterRepository;
     private readonly TcpListener _listener = new(IPAddress.Any, serverOptions.Value.Port);
@@ -29,14 +29,14 @@ public class NewConnectionHostedService(
     private readonly IStatsReporter _statsReporter = statsReporter;
     private readonly WorldState _world = worldState;
 
-    public async Task StartAsync(CancellationToken cancellationToken)
+    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         await _statsReporter.Report();
         _listener.Start();
         _logger.LogInformation("Waiting for connections on {Endpoint}...", _listener.LocalEndpoint);
-        while (true)
+        while (cancellationToken.IsCancellationRequested is false)
         {
-            var client = _listener.AcceptTcpClient();
+            var client = await _listener.AcceptTcpClientAsync();
             if (client == null)
             {
                 _logger.LogWarning("Accepted client was null, skipping...");
@@ -66,10 +66,10 @@ public class NewConnectionHostedService(
         }
     }
 
-    public Task StopAsync(CancellationToken cancellationToken)
+    public override Task StopAsync(CancellationToken cancellationToken)
     {
         Dispose();
-        return Task.CompletedTask;
+        return base.StopAsync(cancellationToken);
     }
 
     private void UpdateConnectedCount()

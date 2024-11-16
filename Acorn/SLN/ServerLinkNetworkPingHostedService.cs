@@ -6,36 +6,46 @@ using Refit;
 
 namespace Acorn.SLN;
 
-public class ServerLinkNetworkPingHostedService(
-    ILogger<ServerLinkNetworkPingHostedService> logger, 
-    IOptions<SLNOptions> slnOptions,
-    IOptions<ServerOptions> serverOptions,
-    IServerLinkNetworkClient client) : IHostedService
+public class ServerLinkNetworkPingHostedService : IHostedService
 {
-    private readonly ILogger<ServerLinkNetworkPingHostedService> _logger = logger;
-    private readonly IServerLinkNetworkClient _client = client;
-    private readonly SLNOptions _slnOptions = slnOptions.Value;
-    private readonly ServerOptions _serverOptions = serverOptions.Value;
+    private readonly ILogger<ServerLinkNetworkPingHostedService> _logger;
+    private readonly IServerLinkNetworkClient _client;
+    private readonly SLNOptions _slnOptions;
+    private readonly ServerOptions _serverOptions;
+
+    public ServerLinkNetworkPingHostedService(
+        ILogger<ServerLinkNetworkPingHostedService> logger, 
+        IOptions<SLNOptions> slnOptions, 
+        IOptions<ServerOptions> serverOptions, 
+        IServerLinkNetworkClient client
+    ) 
+    { 
+        _logger = logger; 
+        _client = client; 
+        _slnOptions = slnOptions.Value; 
+        _serverOptions = serverOptions.Value; 
+    }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Starting ServerLinkNetworkPingHostedService");
+        _logger.LogDebug("Starting ServerLinkNetworkPingHostedService");
         var timer = new PeriodicTimer(TimeSpan.FromMinutes(_slnOptions.PingRate));
-        while (!cancellationToken.IsCancellationRequested)
+        while (cancellationToken.IsCancellationRequested is false)
         {
             try
             {
                 _logger.LogDebug("Current assembly version {Version}", Assembly.GetExecutingAssembly().GetName()?.Version?.ToString());
-                var response = await _client.GetSlnResponse(
+                var response = await _client.CheckSlnAsync(
                     "Acorn",
                     Assembly.GetExecutingAssembly().GetName()?.Version?.ToString() ?? throw new Exception("Could not get version of current assembly"),
                     _serverOptions.Hostname,
                     _serverOptions.Port,
-                    _serverOptions.ServeName,
+                    _serverOptions.ServerName,
                     _serverOptions.Site,
-                    _serverOptions.Zone,
+                    _slnOptions.Zone,
                     0,
-                    2
+                    2,
+                    _slnOptions.PingRate * 60
                 );
 
                 _logger.LogDebug("Response from SLN: {Response}", response);
@@ -57,16 +67,17 @@ public class ServerLinkNetworkPingHostedService(
 
 public interface IServerLinkNetworkClient
 {
-    [Get("")]
-    public Task<string> GetSlnResponse(
-        string software, 
-        string version, 
-        string host, 
-        int port, 
-        string name, 
-        string url, 
-        string zone, 
-        int clientMajorVersion, 
-        int clientMinorVersion
+    [Get("/check")]
+    public Task<string> CheckSlnAsync(
+        string software,
+        string v,
+        string host,
+        int port,
+        string name,
+        string url,
+        string zone,
+        int clientMajorVersion,
+        int clientMinorVersion,
+        int retry
     );
 }

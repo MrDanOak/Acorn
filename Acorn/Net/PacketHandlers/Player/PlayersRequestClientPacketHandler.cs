@@ -26,7 +26,10 @@ public class PlayersRequestClientPacketHandler : IPacketHandler<PlayersRequestCl
             {
                 PlayersList = new PlayersList
                 {
-                    Players = _world.Players.Select(x => x.Character?.AsOnlinePlayer()).ToList()
+                    Players = _world.Players
+                        .Where(x => x.Character is not null)
+                        .Select(x => x.Character!.AsOnlinePlayer())
+                        .ToList()
                 }
             }
         });

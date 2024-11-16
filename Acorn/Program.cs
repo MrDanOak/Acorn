@@ -26,23 +26,22 @@ var BOLD = Console.IsOutputRedirected ? "" : "\x1b[1m";
 var NOBOLD = Console.IsOutputRedirected ? "" : "\x1b[22m";
 
 Console.WriteLine($"""
-                   {GREEN}   _       {BOLD}Acorn Endless-Online Server Software{NOBOLD}
-                           _/-\_     ------------------------------------
-                        .-`-:-:-`-.  {GREEN}Author:{NORMAL} Dan Oak{GREEN}
-                       /-:-:-:-:-:-\ {GREEN}Version:{NORMAL} 0.0.0.1{GREEN}
-                       \:-:-:-:-:-:/ 
-                        |`       `|  
-                        |         |  
-                        `\       /'  
-                          `-._.-'    {NORMAL}
-                   """);
+{GREEN}          _       {BOLD}Acorn Endless-Online Server Software{NOBOLD}
+        _/-\_     ------------------------------------
+    .-`-:-:-`-.   {GREEN}Author:{NORMAL} Dan Oak{GREEN}
+    /-:-:-:-:-:-\ {GREEN}Version:{NORMAL} 0.0.0.1{GREEN}
+    \:-:-:-:-:-:/ 
+     |`       `|
+     |         |
+     `\       /'
+       `-._.-'    {NORMAL}
+""");
 
 var configuration = new ConfigurationBuilder()
     .SetBasePath(AppContext.BaseDirectory)
     .AddJsonFile("appsettings.json", false, true)
     .Build();
 
-// service collection builder
 await Host.CreateDefaultBuilder(args)
     .ConfigureServices(services =>
     {
@@ -71,18 +70,18 @@ await Host.CreateDefaultBuilder(args)
             .AddAllOfType(typeof(IPacketHandler<>))
             .AddAllOfType<ITalkHandler>()
             .AddRepositories();
-        
+
         var slnOptions = services.BuildServiceProvider().GetService<IOptions<SLNOptions>>();
         if (slnOptions?.Value.Enabled ?? false)
         {
             services
-                .AddHostedService<ServerLinkNetworkPingHostedService>()
-                .AddRefitClient<IServerLinkNetworkClient>()
-                .ConfigureHttpClient(c =>
-                {
-                    c.BaseAddress = new Uri(slnOptions.Value.Url);
-                    c.DefaultRequestHeaders.Add("User-Agent", slnOptions.Value.UserAgent);
-                });
+            .AddHostedService<ServerLinkNetworkPingHostedService>()
+            .AddRefitClient<IServerLinkNetworkClient>()
+            .ConfigureHttpClient(c =>
+            {
+                c.BaseAddress = new Uri(slnOptions.Value.Url);
+                c.DefaultRequestHeaders.Add("User-Agent", slnOptions.Value.UserAgent);
+            });
         }
     })
     .ConfigureLogging(builder =>
