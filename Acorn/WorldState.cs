@@ -1,21 +1,21 @@
-﻿using Acorn.Data.Repository;
+﻿using System.Collections.Concurrent;
+using Acorn.Database.Repository;
 using Acorn.Extensions;
 using Acorn.Net;
+using Acorn.Net.PacketHandlers.Player.Warp;
 using Moffat.EndlessOnline.SDK.Protocol;
 using Moffat.EndlessOnline.SDK.Protocol.Map;
 using Moffat.EndlessOnline.SDK.Protocol.Net;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
 using Moffat.EndlessOnline.SDK.Protocol.Pub;
-using System.Collections.Concurrent;
-using System.Data;
 
 namespace Acorn;
 
 public class WorldState
 {
-    public ConcurrentBag<PlayerConnection> Players = [];
-    public ConcurrentBag<MapState> Maps = [];
     public ConcurrentBag<GlobalMessage> GlobalMessages = [];
+    public ConcurrentBag<MapState> Maps = [];
+    public ConcurrentBag<PlayerConnection> Players = [];
 
     public WorldState(IDataFileRepository dataRepository)
     {
@@ -26,18 +26,24 @@ public class WorldState
     }
 
     public MapState MapFor(PlayerConnection player)
-        => Maps.Single(x => x.HasPlayer(player));
+    {
+        return Maps.Single(x => x.HasPlayer(player));
+    }
 
-    public Task Refresh(PlayerConnection player)=> 
-        player.Character switch
+    public Task Refresh(PlayerConnection player)
+    {
+        return player.Character switch
         {
-            null => throw new InvalidOperationException("Cannot refresh player where the selected character is not initialised"),
+            null => throw new InvalidOperationException(
+                "Cannot refresh player where the selected character is not initialised"),
             _ => Warp(player, player.Character.Map, player.Character.X, player.Character.Y)
         };
+    }
 
-    public async Task Warp(PlayerConnection player, int mapId, int x, int y, WarpEffect warpEffect = WarpEffect.None, bool localWarp = true)
+    public async Task Warp(PlayerConnection player, int mapId, int x, int y, WarpEffect warpEffect = WarpEffect.None,
+        bool localWarp = true)
     {
-        player.WarpSession = new()
+        player.WarpSession = new WarpSession
         {
             WarpEffect = warpEffect,
             Local = localWarp,
@@ -59,42 +65,46 @@ public class WorldState
 }
 
 public record GlobalMessage(
-    Guid Id, 
+    Guid Id,
     string Message,
     string Author,
     DateTime CreatedAt
 )
 {
-    public static GlobalMessage Welcome() => 
-        new(
-            Guid.NewGuid(), 
-            "Welcome to Acorn! Please be respectful.", 
-            "Server", 
+    public static GlobalMessage Welcome()
+    {
+        return new GlobalMessage(
+            Guid.NewGuid(),
+            "Welcome to Acorn! Please be respectful.",
+            "Server",
             DateTime.UtcNow
         );
+    }
 }
 
 public class MapState
 {
-    public int Id { get; set; }
-    public Emf Data { get; set; }
-
-    public ConcurrentBag<NpcState> Npcs { get; set; } = new();
-    public ConcurrentBag<PlayerConnection> Players { get; set; } = new();
-
     public MapState(MapWithId data)
     {
         Id = data.Id;
         Data = data.Map;
     }
 
+    public int Id { get; set; }
+    public Emf Data { get; set; }
+
+    public ConcurrentBag<NpcState> Npcs { get; set; } = new();
+    public ConcurrentBag<PlayerConnection> Players { get; set; } = new();
+
     public bool HasPlayer(PlayerConnection player)
     {
         return Players.Contains(player);
     }
 
-    public IEnumerable<PlayerConnection> PlayersExcept(PlayerConnection playerConnection) =>
-        Players.Where(x => x != playerConnection);
+    public IEnumerable<PlayerConnection> PlayersExcept(PlayerConnection playerConnection)
+    {
+        return Players.Where(x => x != playerConnection);
+    }
 
     public async Task BroadcastPacket(IPacket packet, PlayerConnection? except = null)
     {
@@ -107,18 +117,24 @@ public class MapState
         await Task.WhenAll(broadcast);
     }
 
-    public NearbyInfo AsNearbyInfo(PlayerConnection? except = null, WarpEffect warpEffect = WarpEffect.None) => new()
+    public NearbyInfo AsNearbyInfo(PlayerConnection? except = null, WarpEffect warpEffect = WarpEffect.None)
     {
-        Characters = Players
-            .Where(x => x.Character is not null)
-            .Where(x => except == null || x != except)
-            .Select(x => x.Character?.AsCharacterMapInfo(x.SessionId, warpEffect))
-            .ToList(),
-        Items = [],
-        Npcs = AsNpcMapInfo()
-    };
+        return new NearbyInfo
+        {
+            Characters = Players
+                .Where(x => x.Character is not null)
+                .Where(x => except == null || x != except)
+                .Select(x => x.Character?.AsCharacterMapInfo(x.SessionId, warpEffect))
+                .ToList(),
+            Items = [],
+            Npcs = AsNpcMapInfo()
+        };
+    }
 
-    public List<NpcMapInfo> AsNpcMapInfo() => Npcs.Select((x, i) => x.AsNpcMapInfo(i)).ToList();
+    public List<NpcMapInfo> AsNpcMapInfo()
+    {
+        return Npcs.Select((x, i) => x.AsNpcMapInfo(i)).ToList();
+    }
 
     public async Task Enter(PlayerConnection player, WarpEffect warpEffect = WarpEffect.None)
     {
@@ -126,16 +142,18 @@ public class MapState
         {
             return;
         }
-        
+
         player.Character.Map = Id;
 
         if (!Players.Contains(player))
+        {
             Players.Add(player);
+        }
 
         await BroadcastPacket(new PlayersAgreeServerPacket
         {
             Nearby = AsNearbyInfo(null, warpEffect)
-        }, except: player);
+        }, player);
     }
 
     public async Task Leave(PlayerConnection player, WarpEffect warpEffect = WarpEffect.None)
@@ -144,7 +162,7 @@ public class MapState
 
         await BroadcastPacket(new PlayersRemoveServerPacket
         {
-            PlayerId = player.SessionId,
+            PlayerId = player.SessionId
         });
 
         await BroadcastPacket(new AvatarRemoveServerPacket
@@ -166,6 +184,11 @@ public class MapState
 
 public class NpcState
 {
+    public NpcState(EnfRecord data)
+    {
+        Data = data;
+    }
+
     public EnfRecord Data { get; set; }
     public Direction Direction { get; set; }
     public int X { get; set; }
@@ -173,16 +196,13 @@ public class NpcState
     public int Id { get; set; }
 
     public NpcMapInfo AsNpcMapInfo(int index)
-        => new()
+    {
+        return new NpcMapInfo
         {
-            Coords = new() { X = X, Y = Y },
+            Coords = new Coords { X = X, Y = Y },
             Direction = Direction,
             Id = Id,
             Index = index
         };
-
-    public NpcState(EnfRecord data)
-    {
-        Data = data;
     }
 }

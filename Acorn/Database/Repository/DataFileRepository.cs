@@ -1,23 +1,18 @@
-﻿using Moffat.EndlessOnline.SDK.Data;
+﻿using System.Text.RegularExpressions;
+using Moffat.EndlessOnline.SDK.Data;
 using Moffat.EndlessOnline.SDK.Protocol.Map;
 using Moffat.EndlessOnline.SDK.Protocol.Pub;
 using OneOf;
 using OneOf.Types;
-using System.Text.RegularExpressions;
 
-namespace Acorn.Data.Repository;
+namespace Acorn.Database.Repository;
+
 public class DataFileRepository : IDataFileRepository
-{ 
+{
     private readonly string _ecfFile = "Data/Pub/dat001.ecf";
     private readonly string _eifFile = "Data/Pub/dat001.eif";
     private readonly string _enfFile = "Data/Pub/dtn001.enf";
     private readonly string _esfFile = "Data/Pub/dsl001.esf";
-
-    public Ecf Ecf { get; } = new();
-    public Eif Eif { get; } = new();
-    public Enf Enf { get; } = new();
-    public Esf Esf { get; } = new();
-    public IEnumerable<MapWithId> Maps { get; }
 
     public DataFileRepository()
     {
@@ -33,6 +28,12 @@ public class DataFileRepository : IDataFileRepository
             return new MapWithId(id, emf);
         }).ToList();
     }
+
+    public Ecf Ecf { get; } = new();
+    public Eif Eif { get; } = new();
+    public Enf Enf { get; } = new();
+    public Esf Esf { get; } = new();
+    public IEnumerable<MapWithId> Maps { get; }
 }
 
 public static class EcfExtension
@@ -43,6 +44,7 @@ public static class EcfExtension
         {
             return new Error<string>($"{id} is greater than the class count ({ecf.Classes.Count})");
         }
+
         var @class = ecf.Classes[id];
         return new Success<EcfRecord>(@class);
     }
@@ -56,6 +58,7 @@ public static class EnfExtension
         {
             return new Error<string>($"{id} is greater than the npc count ({enf.Npcs.Count})");
         }
+
         var npc = enf.Npcs[id];
         return new Success<EnfRecord>(npc);
     }
@@ -69,6 +72,7 @@ public static class EifExtension
         {
             return new Error<string>($"{id} is greater than the item count ({eif.Items.Count})");
         }
+
         var item = eif.Items[id];
         return new Success<EifRecord>(item);
     }
@@ -82,6 +86,7 @@ public static class EsfExtension
         {
             return new Error<string>($"{id} is greater than the skill count ({esf.Skills.Count})");
         }
+
         var skill = esf.Skills[id];
         return new Success<EsfRecord>(skill);
     }

@@ -1,10 +1,11 @@
 ﻿using OneOf;
 using OneOf.Types;
 
-namespace Acorn.Data.Repository;
+namespace Acorn.Database.Repository;
 
 public interface IDbRepository<T> : IDbRepository<T, string> where T : class
-{ }
+{
+}
 
 public interface IDbRepository<T, TKey> where T : class
 {

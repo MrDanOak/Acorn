@@ -1,27 +1,17 @@
-﻿using Acorn.Data.Models;
+﻿using System.Data;
 using Acorn.Database.Models;
 using Dapper;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OneOf;
 using OneOf.Types;
-using System.Data;
 
-namespace Acorn.Data.Repository;
+namespace Acorn.Database.Repository;
+
 public class AccountRepository : BaseDbRepository, IDbRepository<Account>, IDisposable
 {
     private readonly IDbConnection _conn;
     private readonly ILogger<AccountRepository> _logger;
-
-    public static class SQLStatements
-    {
-        public static string Create = "";
-        public static string Update = "";
-        public static string GetByKey = "";
-        public static string Delete = "";
-        public static string GetCharacters = "";
-        public static string GetAll = "";
-    }
 
     public AccountRepository(
         IDbConnection conn,
@@ -37,7 +27,8 @@ public class AccountRepository : BaseDbRepository, IDbRepository<Account>, IDisp
         SQLStatements.Update = File.ReadAllText($"Database/Scripts/{options.Value.Engine}/Account/Update.sql");
         SQLStatements.GetByKey = File.ReadAllText($"Database/Scripts/{options.Value.Engine}/Account/GetByKey.sql");
         SQLStatements.Delete = File.ReadAllText($"Database/Scripts/{options.Value.Engine}/Account/Delete.sql");
-        SQLStatements.GetCharacters = File.ReadAllText($"Database/Scripts/{options.Value.Engine}/Account/GetCharacters.sql");
+        SQLStatements.GetCharacters =
+            File.ReadAllText($"Database/Scripts/{options.Value.Engine}/Account/GetCharacters.sql");
         SQLStatements.GetAll = File.ReadAllText($"Database/Scripts/{options.Value.Engine}/Account/GetAll.sql");
 
         if (_conn.State != ConnectionState.Open)
@@ -57,7 +48,8 @@ public class AccountRepository : BaseDbRepository, IDbRepository<Account>, IDisp
         }
         catch (Exception e)
         {
-            _logger.LogError("Error saving account information for {PlayerName}. Exception {Exception}", entity.Username, e.Message);
+            _logger.LogError("Error saving account information for {PlayerName}. Exception {Exception}",
+                entity.Username, e.Message);
             t.Rollback();
             return new Error();
         }
@@ -92,7 +84,8 @@ public class AccountRepository : BaseDbRepository, IDbRepository<Account>, IDisp
                 return new NotFound();
             }
 
-            acc.Characters = (await _conn.QueryAsync<Character>(SQLStatements.GetCharacters, new { username })).ToList();
+            acc.Characters = (await _conn.QueryAsync<Character>(SQLStatements.GetCharacters, new { username }))
+                .ToList();
             return new Success<Account>(acc);
         }
         catch (Exception e)
@@ -110,7 +103,9 @@ public class AccountRepository : BaseDbRepository, IDbRepository<Account>, IDisp
             var accounts = (await _conn.QueryAsync<Account>(SQLStatements.GetAll)).ToList();
             var withCharacters = accounts.Select(async a =>
             {
-                a.Characters = (await _conn.QueryAsync<Character>(SQLStatements.GetCharacters, new { username = a.Username })).ToList();
+                a.Characters =
+                    (await _conn.QueryAsync<Character>(SQLStatements.GetCharacters, new { username = a.Username }))
+                    .ToList();
                 return a;
             });
 
@@ -135,7 +130,8 @@ public class AccountRepository : BaseDbRepository, IDbRepository<Account>, IDisp
         }
         catch (Exception e)
         {
-            _logger.LogError("Error saving account information for {PlayerName}. Exception {Exception}", entity.Username, e.Message);
+            _logger.LogError("Error saving account information for {PlayerName}. Exception {Exception}",
+                entity.Username, e.Message);
             t.Rollback();
             return new Error();
         }
@@ -146,7 +142,20 @@ public class AccountRepository : BaseDbRepository, IDbRepository<Account>, IDisp
     public void Dispose()
     {
         if (_conn.State == ConnectionState.Open)
+        {
             _conn.Close();
+        }
+
         _conn.Dispose();
+    }
+
+    public static class SQLStatements
+    {
+        public static string Create = "";
+        public static string Update = "";
+        public static string GetByKey = "";
+        public static string Delete = "";
+        public static string GetCharacters = "";
+        public static string GetAll = "";
     }
 }

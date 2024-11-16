@@ -1,10 +1,12 @@
 ﻿using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
 
 namespace Acorn.Extensions;
+
 public static class EquipmentPaperdollExtensions
 {
-    public static EquipmentWelcome AsEquipmentWelcome(this EquipmentPaperdoll paperdoll) =>
-        new()
+    public static EquipmentWelcome AsEquipmentWelcome(this EquipmentPaperdoll paperdoll)
+    {
+        return new EquipmentWelcome
         {
             Accessory = paperdoll.Accessory,
             Armlet = paperdoll.Armlet,
@@ -19,4 +21,5 @@ public static class EquipmentPaperdollExtensions
             Shield = paperdoll.Shield,
             Weapon = paperdoll.Weapon
         };
+    }
 }

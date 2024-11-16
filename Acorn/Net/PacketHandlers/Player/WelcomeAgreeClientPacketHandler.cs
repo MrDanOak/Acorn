@@ -1,4 +1,4 @@
-﻿using Acorn.Data.Repository;
+﻿using Acorn.Database.Repository;
 using Moffat.EndlessOnline.SDK.Data;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Client;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
@@ -6,6 +6,7 @@ using OneOf;
 using OneOf.Types;
 
 namespace Acorn.Net.PacketHandlers.Player;
+
 public class WelcomeAgreeClientPacketHandler : IPacketHandler<WelcomeAgreeClientPacket>
 {
     private readonly IDataFileRepository _dataRepository;
@@ -17,7 +18,8 @@ public class WelcomeAgreeClientPacketHandler : IPacketHandler<WelcomeAgreeClient
         _dataRepository = dataRepository;
     }
 
-    public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, WelcomeAgreeClientPacket packet)
+    public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection,
+        WelcomeAgreeClientPacket packet)
     {
         var eoWriter = new EoWriter();
         Action serialise = packet.FileType switch
@@ -29,11 +31,11 @@ public class WelcomeAgreeClientPacketHandler : IPacketHandler<WelcomeAgreeClient
             FileType.Emf => () =>
             {
                 var map = _dataRepository.Maps.FirstOrDefault(map => map.Id == playerConnection.Character?.Map)?.Map ??
-                    throw new ArgumentOutOfRangeException($"Could not find map {playerConnection.Character?.Map} for character {playerConnection.Character?.Name}");
+                          throw new ArgumentOutOfRangeException(
+                              $"Could not find map {playerConnection.Character?.Map} for character {playerConnection.Character?.Name}");
 
                 map.Serialize(eoWriter);
-            }
-            ,
+            },
             _ => throw new InvalidOperationException($"Unknown file type {packet.FileType}")
         };
         serialise();
@@ -92,7 +94,7 @@ public class WelcomeAgreeClientPacketHandler : IPacketHandler<WelcomeAgreeClient
                         Content = bytes
                     }
                 },
-                _ => throw new NotImplementedException($"{packet.FileType} is not supported"),
+                _ => throw new NotImplementedException($"{packet.FileType} is not supported")
             }
         });
 
@@ -100,5 +102,7 @@ public class WelcomeAgreeClientPacketHandler : IPacketHandler<WelcomeAgreeClient
     }
 
     public Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, object packet)
-        => HandleAsync(playerConnection, (WelcomeAgreeClientPacket)packet);
+    {
+        return HandleAsync(playerConnection, (WelcomeAgreeClientPacket)packet);
+    }
 }

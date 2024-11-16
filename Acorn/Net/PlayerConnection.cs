@@ -1,5 +1,4 @@
-﻿using Acorn.Data;
-using Acorn.Data.Models;
+﻿using System.Net.Sockets;
 using Acorn.Database.Models;
 using Acorn.Extensions;
 using Acorn.Infrastructure;
@@ -12,33 +11,16 @@ using Moffat.EndlessOnline.SDK.Packet;
 using Moffat.EndlessOnline.SDK.Protocol;
 using Moffat.EndlessOnline.SDK.Protocol.Net;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
-using System.Net.Sockets;
 
 namespace Acorn.Net;
+
 public class PlayerConnection : IDisposable
 {
-    private ILogger<PlayerConnection> _logger;
-    private readonly PacketResolver _resolver = new("Moffat.EndlessOnline.SDK.Protocol.Net.Client");
-    private readonly PingSequenceStart _upcomingSequence;
     private readonly Action<PlayerConnection> _onDispose;
+    private readonly PacketResolver _resolver = new("Moffat.EndlessOnline.SDK.Protocol.Net.Client");
     private readonly IServiceProvider _serviceProvider;
-
-    public Random Rnd { get; } = new();
-
-    public ClientState ClientState { get; set; } = ClientState.Uninitialized;
-    public bool NeedPong { get; set; } = false;
-    public int ClientEncryptionMulti { get; set; } = 0;
-    public int ServerEncryptionMulti { get; set; } = 0;
-    public PacketSequencer PacketSequencer { get; set; } = new(ZeroSequence.Instance);
-    public InitSequenceStart StartSequence { get; set; }
-    public TcpClient TcpClient { get; }
-    public Account? Account { get; set; }
-    public bool IsListeningToGlobal { get; set; }
-
-    public int SessionId { get; set; }
-    public WarpSession? WarpSession { get; set; }
-
-    public Character? Character { get; set; }
+    private readonly PingSequenceStart _upcomingSequence;
+    private readonly ILogger<PlayerConnection> _logger;
 
     public PlayerConnection(
         IServiceProvider services,
@@ -60,6 +42,29 @@ public class PlayerConnection : IDisposable
         Task.Run(Listen);
     }
 
+    public Random Rnd { get; } = new();
+
+    public ClientState ClientState { get; set; } = ClientState.Uninitialized;
+    public bool NeedPong { get; set; } = false;
+    public int ClientEncryptionMulti { get; set; } = 0;
+    public int ServerEncryptionMulti { get; set; } = 0;
+    public PacketSequencer PacketSequencer { get; set; } = new(ZeroSequence.Instance);
+    public InitSequenceStart StartSequence { get; set; }
+    public TcpClient TcpClient { get; }
+    public Account? Account { get; set; }
+    public bool IsListeningToGlobal { get; set; }
+
+    public int SessionId { get; set; }
+    public WarpSession? WarpSession { get; set; }
+
+    public Character? Character { get; set; }
+
+    public void Dispose()
+    {
+        _onDispose(this);
+        TcpClient.Close();
+    }
+
     public async Task Listen()
     {
         while (true)
@@ -79,7 +84,8 @@ public class PlayerConnection : IDisposable
                 var decodedBytes = ClientEncryptionMulti switch
                 {
                     0 => bytes,
-                    _ => DataEncrypter.SwapMultiples(DataEncrypter.Deinterleave(DataEncrypter.FlipMSB(bytes)), ClientEncryptionMulti)
+                    _ => DataEncrypter.SwapMultiples(DataEncrypter.Deinterleave(DataEncrypter.FlipMSB(bytes)),
+                        ClientEncryptionMulti)
                 };
 
                 var reader = new EoReader(decodedBytes);
@@ -97,7 +103,8 @@ public class PlayerConnection : IDisposable
                 var handlerType = typeof(IPacketHandler<>).MakeGenericType(packet.GetType());
                 if (_serviceProvider.GetService(handlerType) is not IHandler handler)
                 {
-                    _logger.LogError("Handler not registered for packet of type {PacketType} Exiting...", packet.GetType());
+                    _logger.LogError("Handler not registered for packet of type {PacketType} Exiting...",
+                        packet.GetType());
                     break;
                 }
 
@@ -105,7 +112,9 @@ public class PlayerConnection : IDisposable
 
                 (await handler.HandleAsync(this, packet)).Switch(success => { }, fail => error = true);
                 if (error)
+                {
                     break;
+                }
             }
             catch (Exception e)
             {
@@ -113,6 +122,7 @@ public class PlayerConnection : IDisposable
                 break;
             }
         }
+
         Dispose();
     }
 
@@ -151,20 +161,15 @@ public class PlayerConnection : IDisposable
         packet.Serialize(writer);
 
 
-        byte[] bytes = packet switch
+        var bytes = packet switch
         {
             InitInitServerPacket _ => writer.ToByteArray(),
-            _ => DataEncrypter.FlipMSB(DataEncrypter.Interleave(DataEncrypter.SwapMultiples(writer.ToByteArray(), ServerEncryptionMulti)))
+            _ => DataEncrypter.FlipMSB(
+                DataEncrypter.Interleave(DataEncrypter.SwapMultiples(writer.ToByteArray(), ServerEncryptionMulti)))
         };
 
         var encodedLength = NumberEncoder.EncodeNumber(bytes.Length);
         var fullBytes = encodedLength[..2].Concat(bytes);
-        await TcpClient.GetStream().WriteAsync(fullBytes.AsReadOnly(), new CancellationToken());
-    }
-
-    public void Dispose()
-    {
-        _onDispose(this);
-        TcpClient.Close();
+        await TcpClient.GetStream().WriteAsync(fullBytes.AsReadOnly());
     }
 }

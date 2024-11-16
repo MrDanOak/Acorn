@@ -3,6 +3,7 @@ using OneOf;
 using OneOf.Types;
 
 namespace Acorn.Net.PacketHandlers.Player;
+
 internal class GlobalCloseClientPacketHandler : IPacketHandler<GlobalCloseClientPacket>
 {
     public Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, GlobalCloseClientPacket packet)
@@ -12,5 +13,7 @@ internal class GlobalCloseClientPacketHandler : IPacketHandler<GlobalCloseClient
     }
 
     public Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, object packet)
-        => HandleAsync(playerConnection, (GlobalCloseClientPacket)packet);
+    {
+        return HandleAsync(playerConnection, (GlobalCloseClientPacket)packet);
+    }
 }

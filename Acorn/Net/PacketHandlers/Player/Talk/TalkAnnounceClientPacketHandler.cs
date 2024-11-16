@@ -9,8 +9,8 @@ namespace Acorn.Net.PacketHandlers.Player.Talk;
 
 public class TalkAnnounceClientPacketHandler : IPacketHandler<TalkAnnounceClientPacket>
 {
-    private WorldState _world;
-    private ILogger<TalkAnnounceClientPacketHandler> _logger;
+    private readonly ILogger<TalkAnnounceClientPacketHandler> _logger;
+    private readonly WorldState _world;
 
     public TalkAnnounceClientPacketHandler(WorldState world, ILogger<TalkAnnounceClientPacketHandler> logger)
     {
@@ -18,7 +18,8 @@ public class TalkAnnounceClientPacketHandler : IPacketHandler<TalkAnnounceClient
         _logger = logger;
     }
 
-    public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, TalkAnnounceClientPacket packet)
+    public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection,
+        TalkAnnounceClientPacket packet)
     {
         if (playerConnection.Character is null)
         {
@@ -27,7 +28,8 @@ public class TalkAnnounceClientPacketHandler : IPacketHandler<TalkAnnounceClient
 
         if (playerConnection.Character.Admin == AdminLevel.Player)
         {
-            _logger.LogDebug("Player tried to send an announcement packet without admin permissions {Player}", playerConnection.Character.Name);
+            _logger.LogDebug("Player tried to send an announcement packet without admin permissions {Player}",
+                playerConnection.Character.Name);
             return new Success();
         }
 
@@ -44,5 +46,7 @@ public class TalkAnnounceClientPacketHandler : IPacketHandler<TalkAnnounceClient
     }
 
     public Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, object packet)
-        => HandleAsync(playerConnection, (TalkAnnounceClientPacket)packet);
+    {
+        return HandleAsync(playerConnection, (TalkAnnounceClientPacket)packet);
+    }
 }

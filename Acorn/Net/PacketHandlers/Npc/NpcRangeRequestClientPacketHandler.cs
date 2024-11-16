@@ -4,16 +4,18 @@ using OneOf;
 using OneOf.Types;
 
 namespace Acorn.Net.PacketHandlers.Npc;
+
 public class NpcRangeRequestClientPacketHandler : IPacketHandler<NpcRangeRequestClientPacket>
 {
-    private WorldState _world;
+    private readonly WorldState _world;
 
     public NpcRangeRequestClientPacketHandler(WorldState world)
     {
         _world = world;
     }
 
-    public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, NpcRangeRequestClientPacket packet)
+    public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection,
+        NpcRangeRequestClientPacket packet)
     {
         var map = _world.MapFor(playerConnection);
 
@@ -26,5 +28,7 @@ public class NpcRangeRequestClientPacketHandler : IPacketHandler<NpcRangeRequest
     }
 
     public Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, object packet)
-        => HandleAsync(playerConnection, (NpcRangeRequestClientPacket)packet);
+    {
+        return HandleAsync(playerConnection, (NpcRangeRequestClientPacket)packet);
+    }
 }

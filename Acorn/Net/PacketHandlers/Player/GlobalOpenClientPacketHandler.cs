@@ -4,9 +4,10 @@ using OneOf;
 using OneOf.Types;
 
 namespace Acorn.Net.PacketHandlers.Player;
+
 public class GlobalOpenClientPacketHandler : IPacketHandler<GlobalOpenClientPacket>
 {
-    private WorldState _world;
+    private readonly WorldState _world;
 
     public GlobalOpenClientPacketHandler(WorldState world)
     {
@@ -16,21 +17,23 @@ public class GlobalOpenClientPacketHandler : IPacketHandler<GlobalOpenClientPack
     public Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, GlobalOpenClientPacket packet)
     {
         playerConnection.IsListeningToGlobal = true;
-        new GlobalMessage[] { GlobalMessage.Welcome() }
-        .Concat(_world.GlobalMessages.OrderByDescending(x => x.CreatedAt).Take(10))
-        .ToList()
-        .ForEach(async x =>
-        {
-            await playerConnection.Send(new TalkMsgServerPacket
+        new[] { GlobalMessage.Welcome() }
+            .Concat(_world.GlobalMessages.OrderByDescending(x => x.CreatedAt).Take(10))
+            .ToList()
+            .ForEach(async x =>
             {
-                Message = x.Message,
-                PlayerName = x.Author
+                await playerConnection.Send(new TalkMsgServerPacket
+                {
+                    Message = x.Message,
+                    PlayerName = x.Author
+                });
             });
-        });
 
         return Task.FromResult(OneOf<Success, Error>.FromT0(new Success()));
     }
 
     public Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, object packet)
-        => HandleAsync(playerConnection, (GlobalOpenClientPacket)packet);
+    {
+        return HandleAsync(playerConnection, (GlobalOpenClientPacket)packet);
+    }
 }

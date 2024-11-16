@@ -1,25 +1,29 @@
-﻿using Acorn.Data.Repository;
+﻿using Acorn.Database.Repository;
 using Microsoft.Extensions.Logging;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
 using Moffat.EndlessOnline.SDK.Protocol.Pub;
 
 namespace Acorn.Net.PacketHandlers.Player.Talk;
+
 public class SpawnNpcCommandHandler : ITalkHandler
 {
-    private WorldState _world;
-    private IDataFileRepository _dataFiles;
     private readonly ILogger<SpawnNpcCommandHandler> _logger;
+    private readonly IDataFileRepository _dataFiles;
+    private readonly WorldState _world;
 
-    public SpawnNpcCommandHandler(WorldState world, IDataFileRepository dataFiles, ILogger<SpawnNpcCommandHandler> logger)
+    public SpawnNpcCommandHandler(WorldState world, IDataFileRepository dataFiles,
+        ILogger<SpawnNpcCommandHandler> logger)
     {
         _world = world;
         _dataFiles = dataFiles;
         _logger = logger;
     }
 
-    public bool CanHandle(string command) =>
-        command.Equals("spawnnpc", StringComparison.InvariantCultureIgnoreCase)
-        || command.Equals("snpc", StringComparison.InvariantCultureIgnoreCase);
+    public bool CanHandle(string command)
+    {
+        return command.Equals("spawnnpc", StringComparison.InvariantCultureIgnoreCase)
+               || command.Equals("snpc", StringComparison.InvariantCultureIgnoreCase);
+    }
 
     public Task HandleAsync(PlayerConnection playerConnection, string command, params string[] args)
     {
@@ -37,10 +41,7 @@ public class SpawnNpcCommandHandler : ITalkHandler
         }
 
         _dataFiles.Enf.GetNpc(npcId).Switch(
-            async npc =>
-            {
-                await SpawnNpc(playerConnection, npc.Value);
-            },
+            async npc => { await SpawnNpc(playerConnection, npc.Value); },
             async error =>
             {
                 await playerConnection.Send(new TalkServerServerPacket
@@ -61,7 +62,7 @@ public class SpawnNpcCommandHandler : ITalkHandler
             _logger.LogError("Character has not been initialised on connection");
             return;
         }
-        
+
         var npcId = _dataFiles.Enf.Npcs.FindIndex(x => enf.GetHashCode() == x.GetHashCode());
 
         var npc = new NpcState(enf)
@@ -88,7 +89,8 @@ public class SpawnNpcCommandHandler : ITalkHandler
 
     private Task SpawnByName(PlayerConnection playerConnection, string name)
     {
-        var npc = _dataFiles.Enf.Npcs.FirstOrDefault(x => x.Name.Contains(name, StringComparison.CurrentCultureIgnoreCase));
+        var npc = _dataFiles.Enf.Npcs.FirstOrDefault(x =>
+            x.Name.Contains(name, StringComparison.CurrentCultureIgnoreCase));
 
         if (npc == null)
         {

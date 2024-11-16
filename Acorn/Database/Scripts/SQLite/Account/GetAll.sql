@@ -1,1 +1,2 @@
-SELECT * FROM Accounts
+SELECT *
+FROM Accounts

@@ -1,4 +1,4 @@
-﻿using Acorn.Data.Repository;
+﻿using Acorn.Database.Repository;
 using Acorn.Extensions;
 using Acorn.Infrastructure;
 using Microsoft.Extensions.Logging;
@@ -9,11 +9,12 @@ using OneOf;
 using OneOf.Types;
 
 namespace Acorn.Net.PacketHandlers.Player;
+
 internal class WelcomeRequestClientPacketHandler : IPacketHandler<WelcomeRequestClientPacket>
 {
-    private readonly ISessionGenerator _sessionGenerator;
     private readonly IDataFileRepository _dataRepository;
     private readonly ILogger<WelcomeRequestClientPacketHandler> _logger;
+    private readonly ISessionGenerator _sessionGenerator;
 
     public WelcomeRequestClientPacketHandler(
         ISessionGenerator sessionGenerator,
@@ -26,7 +27,8 @@ internal class WelcomeRequestClientPacketHandler : IPacketHandler<WelcomeRequest
         _logger = logger;
     }
 
-    public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, WelcomeRequestClientPacket packet)
+    public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection,
+        WelcomeRequestClientPacket packet)
     {
         var character = playerConnection.Account?.Characters[packet.CharacterId];
         if (character is null)
@@ -46,7 +48,8 @@ internal class WelcomeRequestClientPacketHandler : IPacketHandler<WelcomeRequest
         var equipmentResult = character.Equipment();
         if (equipmentResult.IsT1)
         {
-            _logger.LogError("Could not get equipment for character {Name}. Error: {Error}", character.Name, equipmentResult.AsT1.Value);
+            _logger.LogError("Could not get equipment for character {Name}. Error: {Error}", character.Name,
+                equipmentResult.AsT1.Value);
             return new Error();
         }
 
@@ -115,7 +118,7 @@ internal class WelcomeRequestClientPacketHandler : IPacketHandler<WelcomeRequest
                     0 => LoginMessageCode.Yes,
                     _ => LoginMessageCode.No
                 },
-                Settings = new ServerSettings()
+                Settings = new ServerSettings
                 {
                     JailMap = 2,
                     RescueMap = 4,
@@ -132,5 +135,7 @@ internal class WelcomeRequestClientPacketHandler : IPacketHandler<WelcomeRequest
     }
 
     public Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, object packet)
-        => HandleAsync(playerConnection, (WelcomeRequestClientPacket)packet);
+    {
+        return HandleAsync(playerConnection, (WelcomeRequestClientPacket)packet);
+    }
 }

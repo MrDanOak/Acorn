@@ -1,4 +1,4 @@
-﻿namespace Acorn.Data.Models;
+﻿namespace Acorn.Database.Models;
 
 public class Paperdoll
 {

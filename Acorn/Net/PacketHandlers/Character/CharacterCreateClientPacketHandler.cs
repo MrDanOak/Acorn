@@ -1,6 +1,7 @@
-﻿using Acorn.Data.Repository;
+﻿using Acorn.Database.Repository;
 using Acorn.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moffat.EndlessOnline.SDK.Protocol;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Client;
 using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
@@ -8,23 +9,19 @@ using OneOf;
 using OneOf.Types;
 
 namespace Acorn.Net.PacketHandlers.Character;
-internal class CharacterCreateClientPacketHandler : IPacketHandler<CharacterCreateClientPacket>
+
+internal class CharacterCreateClientPacketHandler(
+    IDbRepository<Database.Models.Character> repository,
+    ILogger<CharacterCreateClientPacketHandler> logger,
+    IOptions<ServerOptions> gameOptions)
+    : IPacketHandler<CharacterCreateClientPacket>
 {
-    private readonly IDbRepository<Data.Models.Character> _repository;
-    private readonly ILogger<CharacterCreateClientPacketHandler> _logger;
-
-    public CharacterCreateClientPacketHandler(
-        IDbRepository<Data.Models.Character> repository,
-        ILogger<CharacterCreateClientPacketHandler> logger
-    )
+    private readonly ServerOptions _serverOptions = gameOptions.Value;
+    
+    public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection,
+        CharacterCreateClientPacket packet)
     {
-        _repository = repository;
-        _logger = logger;
-    }
-
-    public async Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, CharacterCreateClientPacket packet)
-    {
-        var characterQuery = await _repository.GetByKey(packet.Name);
+        var characterQuery = await repository.GetByKey(packet.Name);
         var exists = characterQuery.Match(success => true, notFound => false, err => false);
 
         if (exists)
@@ -39,7 +36,7 @@ internal class CharacterCreateClientPacketHandler : IPacketHandler<CharacterCrea
             return new Success();
         }
 
-        var character = new Data.Models.Character
+        var character = new Database.Models.Character
         {
             Name = packet.Name,
             Race = packet.Skin,
@@ -48,17 +45,19 @@ internal class CharacterCreateClientPacketHandler : IPacketHandler<CharacterCrea
                 "danzo" => AdminLevel.HighGameMaster,
                 _ => (int)AdminLevel.Player
             },
-            Accounts_Username = playerConnection.Account?.Username ?? throw new InvalidOperationException("Cannot create a character without a user"),
-            Map = 1,
-            X = 1,
-            Y = 1,
+            Accounts_Username = playerConnection.Account?.Username ??
+                throw new InvalidOperationException("Cannot create a character without a user"),
+            Map = _serverOptions.NewCharacter.Map,
+            X = _serverOptions.NewCharacter.X,
+            Y = _serverOptions.NewCharacter.Y,
             HairColor = packet.HairColor,
             HairStyle = packet.HairStyle,
             Gender = packet.Gender
         };
 
-        await _repository.CreateAsync(character);
-        _logger.LogInformation("Character '{Name}' created by '{Username}'.", character.Name, playerConnection.Account.Username);
+        await repository.CreateAsync(character);
+        logger.LogInformation("Character '{Name}' created by '{Username}'.", character.Name,
+            playerConnection.Account.Username);
         playerConnection.Account.Characters.Add(character);
 
         await playerConnection.Send(new CharacterReplyServerPacket
@@ -74,6 +73,7 @@ internal class CharacterCreateClientPacketHandler : IPacketHandler<CharacterCrea
     }
 
     public Task<OneOf<Success, Error>> HandleAsync(PlayerConnection playerConnection, object packet)
-        => HandleAsync(playerConnection, (CharacterCreateClientPacket)packet);
-
+    {
+        return HandleAsync(playerConnection, (CharacterCreateClientPacket)packet);
+    }
 }

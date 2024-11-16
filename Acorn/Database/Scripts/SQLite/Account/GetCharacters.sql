@@ -1,1 +1,3 @@
-SELECT * FROM Characters WHERE Accounts_Username = @username
+SELECT *
+FROM Characters
+WHERE Accounts_Username = @username

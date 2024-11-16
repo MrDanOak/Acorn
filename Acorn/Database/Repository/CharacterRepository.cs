@@ -1,24 +1,17 @@
-﻿using Acorn.Data.Models;
+﻿using System.Data;
+using Acorn.Database.Models;
 using Dapper;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OneOf;
 using OneOf.Types;
-using System.Data;
 
-namespace Acorn.Data.Repository;
+namespace Acorn.Database.Repository;
 
 public class CharacterRepository : BaseDbRepository, IDbRepository<Character>, IDisposable
 {
     private readonly IDbConnection _conn;
     private readonly ILogger<AccountRepository> _logger;
-
-    public static class SQLStatements
-    {
-        public static string Create = "";
-        public static string Update = "";
-        public static string GetByKey = "";
-    }
 
     public CharacterRepository(
         IDbConnection conn,
@@ -46,12 +39,12 @@ public class CharacterRepository : BaseDbRepository, IDbRepository<Character>, I
         try
         {
             await _conn.ExecuteAsync(SQLStatements.Create, entity);
-
             t.Commit();
         }
         catch (Exception e)
         {
-            _logger.LogError("Error saving character information for {CharacterName}. Exception {Exception}", entity.Name, e.Message);
+            _logger.LogError("Error saving character information for {CharacterName}. Exception {Exception}",
+                entity.Name, e.Message);
             t.Rollback();
             return new Error();
         }
@@ -73,7 +66,9 @@ public class CharacterRepository : BaseDbRepository, IDbRepository<Character>, I
                 (character, item) =>
                 {
                     if (item != null && character.Inventory.Items.All(x => x.Id != item.Id))
+                    {
                         character.Inventory.Items.Add(item);
+                    }
 
                     return character;
                 },
@@ -107,7 +102,8 @@ public class CharacterRepository : BaseDbRepository, IDbRepository<Character>, I
         }
         catch (Exception e)
         {
-            _logger.LogError("Error saving character information for {CharacterName}. Exception {Exception}", entity.Name, e.Message);
+            _logger.LogError("Error saving character information for {CharacterName}. Exception {Exception}",
+                entity.Name, e.Message);
             t.Rollback();
             return new Error();
         }
@@ -115,15 +111,25 @@ public class CharacterRepository : BaseDbRepository, IDbRepository<Character>, I
         return new Success();
     }
 
-    public void Dispose()
-    {
-        if (_conn.State == ConnectionState.Open)
-            _conn.Close();
-        _conn.Dispose();
-    }
-
     public Task<OneOf<Success<IEnumerable<Character>>, Error>> GetAll()
     {
         throw new NotImplementedException();
+    }
+
+    public void Dispose()
+    {
+        if (_conn.State == ConnectionState.Open)
+        {
+            _conn.Close();
+        }
+
+        _conn.Dispose();
+    }
+
+    public static class SQLStatements
+    {
+        public static string Create = "";
+        public static string Update = "";
+        public static string GetByKey = "";
     }
 }

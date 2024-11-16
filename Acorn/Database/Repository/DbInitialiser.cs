@@ -1,7 +1,8 @@
 ﻿using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Options;
 
-namespace Acorn.Data.Repository;
+namespace Acorn.Database.Repository;
+
 public class DbInitialiser : IDbInitialiser
 {
     private readonly DatabaseOptions _options;
@@ -22,6 +23,7 @@ public class DbInitialiser : IDbInitialiser
         {
             return;
         }
+
         var sqliteConnection = new SqliteConnection(_options.ConnectionString);
         sqliteConnection.Open();
         using var command = sqliteConnection.CreateCommand();
